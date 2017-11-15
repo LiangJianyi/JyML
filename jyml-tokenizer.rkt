@@ -35,26 +35,15 @@
       (begin
         (set! current-char [string-ref exp index])
         (if (find-tokenregular-whitelist? current-char)
-            (set! token-sequence [append-linkedlist token-sequence (mcons current-char null)])
+            (if [equal? word ""]
+                (set! token-sequence [append-linkedlist token-sequence (mcons current-char null)])
+                (begin
+                  (set! token-sequence [append-linkedlist token-sequence (mcons word null)])
+                  (set! token-sequence [append-linkedlist token-sequence (mcons current-char null)])
+                  (set! word "")))
             (if (find-tokenregular-blacklist? current-char)
-                (set! word "")
+                (unless [equal? word ""]
+                  (set! token-sequence [append-linkedlist token-sequence (mcons word null)])
+                  (set! word ""))
                 (set! word [string-append word (string current-char)])))))))
 
-
-;(define (tokenizer-2 exp)
-;  (let ([token-sequence null]
-;        [word ""]
-;        [current-char null]
-;        [whitelist? null]
-;        [blacklist? null])
-;    (do ([index 0 (+ index 1)])
-;      ([= index (string-length exp)] token-sequence)
-;      (begin
-;        (set! current-char [string-ref exp index])
-;        (set! whitelist? (find-tokenregular-whitelist? current-char))
-;        (set! blacklist? (find-tokenregular-blacklist? current-char))
-;        (if (whitelist?)
-;            (set! token-sequence [append-linkedlist token-sequence (mcons current-char null)])
-;            (if (blacklist?)
-;                (set! word "")
-;                (set! word [string-append word (string current-char)])))))))
