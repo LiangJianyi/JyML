@@ -7,9 +7,6 @@
 
 (define token-sequence (tokenizer "(+ (/ 100 10) (* 2 5))"))
 
-;(define (parse tokens)
-;  ())
-
 (define (println arg)
   (display arg)
   (newline))
@@ -40,8 +37,17 @@
                        (f)))]]))
   (f))
 
-;(list->mlist '(1 2 3))
-(define code-text "(define a 123)  (let ((x 1) (y 2)) (+ x y))")
+;(define code-text "(define a 123)  (let ((x 1) (y 2)) (+ x y))")
+(define code-text (let ([path "/Users/liangjianyi/desktop/parse-text.jyml"]
+                        [f (lambda (iport)
+                             (letrec ([foo (lambda (c lik)
+                                             (if [eof-object? c]
+                                                 (begin
+                                                   (close-input-port iport)
+                                                   (list->string lik))
+                                                 (foo (read-char iport) (append lik (list c)))))])
+                               (foo (read-char iport) null)))])
+                    (f (open-input-file path))))
 (define ast (parse (mlist->list (tokenizer code-text))))
 
 (define ast-2
