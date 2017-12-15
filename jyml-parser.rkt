@@ -23,22 +23,22 @@
 ;(set! ast (append-ast ast [make-ast '- null]))
 ;(set! ast (append-ast ast [make-ast 100 98]))
 
-(define (parse tokens [get-tokens false])
-  (unless [null? tokens]
-    [cond [(equal? #\( [car tokens])
-           (cons
-            (let ([result (parse [cdr tokens] true)])
-              (set! tokens (result 'token))
-              (result 'content))
-            (parse [cdr tokens]))]
-          [(equal? #\) [car tokens])
-           (parse [cdr tokens])]
-          [else (if [equal? get-tokens true]
-                    (lambda (dispatch)
-                      (cond [(eq? 'content dispatch) [car tokens]]
-                            [(eq? 'token dispatch) tokens]))
-                    [car tokens])]]))
+(define (parse tokens)
+  (define (f)
+    (unless [null? tokens]
+      [cond [(equal? #\( [car tokens])
+             (set! tokens [cdr tokens])
+             (cons (f) (f))]
+            [(equal? #\) [car tokens])
+             (set! tokens [cdr tokens])
+             null]
+            [else
+             (cons [car tokens]
+                   (begin
+                     (set! tokens [cdr tokens])
+                     (f)))]]))
+  (f))
 
 ;(list->mlist '(1 2 3))
-(define code-text "(define a 123)  (let ([x 1] [y 2]) (+ x y))")
+(define code-text "(define a 123)  (let ((x 1) (y 2)) (+ x y))")
 (define ast (parse (mlist->list (tokenizer code-text))))
