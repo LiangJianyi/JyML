@@ -25,20 +25,31 @@
 
 (define (parse tokens)
   (define (f)
-    (unless [null? tokens]
-      [cond [(equal? #\( [car tokens])
-             (set! tokens [cdr tokens])
-             (cons (f) (f))]
-            [(equal? #\) [car tokens])
-             (set! tokens [cdr tokens])
-             null]
-            [else
-             (cons [car tokens]
-                   (begin
-                     (set! tokens [cdr tokens])
-                     (f)))]]))
+    (if [null? tokens]
+        null
+        [cond [(equal? #\( [car tokens])
+               (set! tokens [cdr tokens])
+               (cons (f) (f))]
+              [(equal? #\) [car tokens])
+               (set! tokens [cdr tokens])
+               null]
+              [else
+               (cons [car tokens]
+                     (begin
+                       (set! tokens [cdr tokens])
+                       (f)))]]))
   (f))
 
 ;(list->mlist '(1 2 3))
 (define code-text "(define a 123)  (let ((x 1) (y 2)) (+ x y))")
 (define ast (parse (mlist->list (tokenizer code-text))))
+
+(define ast-2
+  (cons (list "define" "a" "123")
+        (cons
+         (list "let" (list (list "x" "1") (list "y" "2")) (list "+" "x" "y"))
+         null)))
+
+(define ast-3
+  (list (list "define" "a" "123")
+        (list "let" (list (list "x" "1") (list "y" "2")) (list "+" "x" "y"))))
