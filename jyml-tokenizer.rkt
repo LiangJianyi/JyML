@@ -1,6 +1,8 @@
 #lang racket
 (require liangjianyi-racket/linkedlist)
 
+(provide tokenizer)
+
 ;;; 需单个字符作为 token 的字符一律划入白名单
 (define tokenregular-whitelist
   (vector #\( #\)))
