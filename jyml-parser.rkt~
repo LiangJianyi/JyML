@@ -1,0 +1,35 @@
+#lang racket
+(require "./jyml-tokenizer.rkt")
+(require "./jyml-ast.rkt")
+(require liangjianyi-racket/linkedlist)
+(require liangjianyi-racket/binarytree)
+
+(define token-sequence (tokenizer "(+ (/ 100 10) (* 2 5))"))
+
+;(define (parse tokens)
+;  ())
+
+(define (println arg)
+  (display arg)
+  (newline))
+
+(define ast [make-ast '* null])
+(set! ast (append-ast ast [make-ast null 12]))
+(set! ast (append-ast ast [make-ast '+ null]))
+(set! ast (append-ast ast [make-ast null 10]))
+(set! ast (append-ast ast [make-ast '/ null]))
+(set! ast (append-ast ast [make-ast 4 null]))
+(set! ast (append-ast ast [make-ast '- null]))
+(set! ast (append-ast ast [make-ast 100 98]))
+
+;;
+(define res-ast null)
+(define (f lik ast)
+  (if [null? lik]
+      ast
+      [cond [(equal? #\( [mcar lik])
+             (if [null? ast]
+                 (f [mcdr lik] (make-ast null null))
+                 (f [mcdr lik] (make-ast ast null)))]
+            [(symbol? [mcar lik]) (mcar lik)]]))
+
