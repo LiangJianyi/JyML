@@ -50,6 +50,16 @@
                     (f (open-input-file path))))
 (define ast (parse (mlist->list (tokenizer code-text))))
 
+(define (read-jyml-file path)
+  (letrec ([iport (open-input-file path)]
+           [f (lambda (c lik)
+                (if [eof-object? c]
+                    (begin
+                      (close-input-port iport)
+                      lik)
+                    (f (read-char iport) (string-append lik (string c)))))])
+    (f (read-char iport) "")))
+
 (define ast-2
   (cons (list "define" "a" "123")
         (cons
