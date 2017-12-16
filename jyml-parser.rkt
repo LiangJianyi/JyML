@@ -6,6 +6,7 @@
 (require compatibility/mlist)
 
 (provide parse)
+(provide read-jyml-file)
 
 (define (parse tokens)
   (define (f)
