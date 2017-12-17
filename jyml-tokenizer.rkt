@@ -5,7 +5,7 @@
 
 ;;; 需单个字符作为 token 的字符一律划入白名单
 (define tokenregular-whitelist
-  (vector #\( #\)))
+  (vector #\( #\) #\[ #\]))
 
 (define (find-tokenregular-whitelist? target)
   (do ([index 0 (+ index 1)]
@@ -33,7 +33,9 @@
         [word ""]
         [current-char null])
     (do ([index 0 (+ index 1)])
-      ([= index (string-length exp)] token-sequence)
+      ([= index (string-length exp)]
+       (unless [equal? word ""] (set! token-sequence [append-linkedlist token-sequence (mcons word null)]))
+       token-sequence)
       (begin
         (set! current-char [string-ref exp index])
         (if (find-tokenregular-whitelist? current-char)
