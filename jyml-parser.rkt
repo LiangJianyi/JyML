@@ -1,21 +1,23 @@
 #lang racket
-(require "./jyml-tokenizer.rkt")
+;(require "./jyml-tokenizer.rkt")
 ;(require "./jyml-ast.rkt")
 ;(require liangjianyi-racket/linkedlist)
 ;(require liangjianyi-racket/binarytree)
-(require compatibility/mlist)
+;(require compatibility/mlist)
 
 (provide parse)
 (provide read-jyml-file)
 
 (define (parse tokens)
+  (define list-begin-marks (list #\( #\[))
+  (define list-end-marks (list #\) #\]))
   (define (f)
     (if [null? tokens]
         null
-        [cond [(equal? #\( [car tokens])
+        [cond [(list? (member [car tokens] list-begin-marks))
                (set! tokens [cdr tokens])
                (cons (f) (f))]
-              [(equal? #\) [car tokens])
+              [(list? (member [car tokens] list-end-marks))
                (set! tokens [cdr tokens])
                null]
               [else
