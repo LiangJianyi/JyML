@@ -49,5 +49,7 @@
       (cond [(eq? opt 'address) address]
             [(eq? opt 'add)
              (set! row-index (+ row-index 1))
-             ]
+             (lambda (name value)
+               (with-handlers ([exn:fail? (add-entry name value)])
+                 (get-entry name)))]
             [(eq? opt 'get) get-entry]))))
