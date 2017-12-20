@@ -1,5 +1,6 @@
 #lang racket
 (require liangjianyi-racket/linkedlist)
+(require racket/exn)
 
 (define (enviroment)
   (let ([eid -1]
@@ -30,22 +31,23 @@
            [address (lambda (dispatch)
                       (cond [(eq? dispatch 'eid) eid]
                             [(eq? dispatch 'row) row-index]))]
+           (add-entry (lambda (name value)
+                        (set! objects [append-linkedlist objects [mcons (lambda (dispatch)
+                                                                          (cond [(eq? dispatch 'name) name]
+                                                                                [(eq? dispatch 'value) value]))
+                                                                        null]])))
+           (get-entry (lambda (name)
+                        (letrec ([f (lambda (lik)
+                                      [if [mpair? lik]
+                                          (if [equal? name ([mcar lik] 'name)]
+                                              [mcar lik]
+                                              (f [mcdr lik]))
+                                          (error "对象未定义: " name)])])
+                          (f objects))))
            [objects null])
     (lambda (opt)
       (cond [(eq? opt 'address) address]
             [(eq? opt 'add)
              (set! row-index (+ row-index 1))
-             (lambda (name value)
-               (set! objects [append-linkedlist objects [mcons (lambda (dispatch)
-                                                                 (cond [(eq? dispatch 'name) name]
-                                                                       [(eq? dispatch 'value) value]))
-                                                               null]]))]
-            [(eq? opt 'get)
-             (lambda (name)
-               (letrec ([f (lambda (lik)
-                             [if [mpair? lik]
-                                 (if [equal? name ([mcar lik] 'name)]
-                                     [mcar lik]
-                                     (f [mcdr lik]))
-                                 (error "对象未定义: " name)])])
-                 (f objects)))]))))
+             ]
+            [(eq? opt 'get) get-entry]))))
