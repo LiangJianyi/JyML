@@ -12,7 +12,7 @@
       (cond [(eq? opt 'add)
              (set! eid (+ eid 1))
              (lambda (table)
-               (set! object-tables [append-linkedlist object-tables (enviro-node eid table)]))]
+               (set! object-tables [append-linkedlist object-tables [mcons (enviro-node eid table) null]]))]
             [(eq? opt 'table)
              (lambda (eid)
                (get-element-by-value object-tables eid
@@ -20,15 +20,32 @@
                                        (when
                                            [equal? eid (x 'eid)]
                                          (x 'table)))))]
-            [(eq? opt 'tail-eid) eid]))))
+            [(eq? opt 'tables) object-tables]
+            [(eq? opt 'tail-eid) eid]
+            [else (error "error operator: " opt)]))))
 
-(define (object-table name value enviroment)
+(define (object-table enviroment)
   (letrec ([row-index -1]
-        [eid (((enviroment) 'tail-eid))]
-        [address (lambda (dispatch)
-                   (cond [(eq? dispatch 'eid) eid]
-                         [(eq? dispatch 'row) row-index]))])
+           [eid (enviroment 'tail-eid)]
+           [address (lambda (dispatch)
+                      (cond [(eq? dispatch 'eid) eid]
+                            [(eq? dispatch 'row) row-index]))]
+           [objects null])
     (lambda (opt)
-      (cond [(eq? opt 'name) name]
-            [(eq? opt 'value) value]
-            [(eq? opt 'address) address]))))
+      (cond [(eq? opt 'address) address]
+            [(eq? opt 'add)
+             (set! row-index (+ row-index 1))
+             (lambda (name value)
+               (set! objects [append-linkedlist objects [mcons (lambda (dispatch)
+                                                                 (cond [(eq? dispatch 'name) name]
+                                                                       [(eq? dispatch 'value) value]))
+                                                               null]]))]
+            [(eq? opt 'get)
+             (lambda (name)
+               (letrec ([f (lambda (lik)
+                             [if [mpair? lik]
+                                 (if [equal? name ([mcar lik] 'name)]
+                                     [mcar lik]
+                                     (f [mcdr lik]))
+                                 (error "对象未定义: " name)])])
+                 (f objects)))]))))
