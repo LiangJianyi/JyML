@@ -51,5 +51,6 @@
              (set! row-index (+ row-index 1))
              (lambda (name value)
                (with-handlers ([exn:fail? (add-entry name value)])
-                 (get-entry name)))]
+                 (when [procedure? (get-entry name)]
+                   (error "对象重复定义: " name))))]
             [(eq? opt 'get) get-entry]))))
