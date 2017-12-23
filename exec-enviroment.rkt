@@ -33,19 +33,38 @@
            [address (lambda (dispatch)
                       (cond [(eq? dispatch 'eid) eid]
                             [(eq? dispatch 'row) row-index]))]
-           (add-entry (lambda (name value)
+           (make-address (lambda (eid row)
+                           (lambda (dispatch)
+                             (cond [(eq? dispatch 'eid) eid]
+                                   [(eq? dispatch 'row) row]))))
+           (address-decode (lambda (code)
+                             (if [string? code]
+                                 (begin
+                                   (if [> (length (string-split code "|")) 2]
+                                       (error "地址编码非法: " code)
+                                       (make-address (string->number (list-ref (string-split code "|") 0))
+                                                     (string->number (list-ref (string-split code "|") 1)))))
+                                 (error "code 必须是一个 string: " code))))
+           (address-encode (lambda (addr)
+                             (string-append (number->string (addr 'eid))
+                                            (number->string (addr 'row)))))
+           (add-entry (lambda (name value [addr address])
                         (set! objects [append-linkedlist objects [mcons (lambda (dispatch)
-                                                                          (cond [(eq? dispatch 'name) name]
+                                                                          (cond [(eq? dispatch 'addr) addr]
+                                                                                [(eq? dispatch 'name) name]
                                                                                 [(eq? dispatch 'value) value]))
                                                                         null]])))
-           (get-entry (lambda (name)
-                        (letrec ([f (lambda (lik)
-                                      [if [mpair? lik]
-                                          (if [equal? name ([mcar lik] 'name)]
-                                              [mcar lik]
-                                              (f [mcdr lik]))
-                                          (error "对象未定义: " name)])])
-                          (f objects))))
+           (get-object-by-name (lambda (name)
+                                 (letrec ([f (lambda (lik)
+                                               [if [mpair? lik]
+                                                   (if [equal? name ([mcar lik] 'name)]
+                                                       [mcar lik]
+                                                       (f [mcdr lik]))
+                                                   (error "对象未定义: " name)])])
+                                   (f objects))))
+           (get-object-by-address (lambda (address)
+                                    (get-element-by-value objects address)))
+           ;;; 对象表
            [objects null])
     (lambda (opt)
       (cond [(eq? opt 'address) address]
@@ -53,6 +72,8 @@
              (set! row-index (+ row-index 1))
              (lambda (name value)
                (with-handlers ([exn:fail? (lambda (e) (add-entry name value))])
-                 (when [procedure? (get-entry name)]
+                 (when [procedure? (get-object-by-name name)]
                    (error "对象重复定义: " name))))]
-            [(eq? opt 'get) get-entry]))))
+            [(eq? opt 'get-object-by-name) get-object-by-name]
+            [(eq? opt 'get-object-by-address) get-object-by-address]
+            [else (error "无效的调用: " opt)]))))
