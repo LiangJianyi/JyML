@@ -2,6 +2,9 @@
 (require liangjianyi-racket/linkedlist)
 (require racket/exn)
 
+;;; eid: 环境节点下标
+;;; object-tables: 是个存储对象表的 mlist,每个节点是一个 enviro-node
+;;; enviro-node: 环境节点，包含了eid和对象表
 (define (enviroment)
   (let ([eid -1]
         [object-tables null]
@@ -18,8 +21,7 @@
              (lambda (eid)
                (get-element-by-value object-tables eid
                                      (lambda (x)
-                                       (when
-                                           [equal? eid (x 'eid)]
+                                       (when [equal? eid (x 'eid)]
                                          (x 'table)))))]
             [(eq? opt 'tables) object-tables]
             [(eq? opt 'tail-eid) eid]
@@ -50,7 +52,7 @@
             [(eq? opt 'add)
              (set! row-index (+ row-index 1))
              (lambda (name value)
-               (with-handlers ([exn:fail? (add-entry name value)])
+               (with-handlers ([exn:fail? (lambda (e) (add-entry name value))])
                  (when [procedure? (get-entry name)]
                    (error "对象重复定义: " name))))]
             [(eq? opt 'get) get-entry]))))
