@@ -46,9 +46,10 @@
                                                      (string->number (list-ref (string-split code "|") 1)))))
                                  (error "code 必须是一个 string: " code))))
            (address-encode (lambda (addr)
-                             (string-append (number->string (addr 'eid))
-                                            (number->string (addr 'row)))))
-           (add-entry (lambda (name value [addr address])
+                             (string-append
+                              (string-append (number->string (addr 'eid)) "|")
+                              (number->string (addr 'row)))))
+           (add-entry (lambda (name value addr)
                         (set! objects [append-linkedlist objects [mcons (lambda (dispatch)
                                                                           (cond [(eq? dispatch 'addr) addr]
                                                                                 [(eq? dispatch 'name) name]
@@ -71,7 +72,10 @@
             [(eq? opt 'add)
              (set! row-index (+ row-index 1))
              (lambda (name value)
-               (with-handlers ([exn:fail? (lambda (e) (add-entry name value))])
+               (with-handlers ([exn:fail? (lambda (e)
+                                            (add-entry name
+                                                       value
+                                                       (make-address eid row-index)))])
                  (when [procedure? (get-object-by-name name)]
                    (error "对象重复定义: " name))))]
             [(eq? opt 'get-object-by-name) get-object-by-name]
