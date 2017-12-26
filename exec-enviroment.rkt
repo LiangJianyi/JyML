@@ -27,12 +27,13 @@
             [(eq? opt 'tail-eid) eid]
             [else (error "error operator: " opt)]))))
 
-(define (object-table enviroment)
+;;; 这里需要注意： address 是一个 proc，由 make-address 返回,
+;;; 其带有一个参数和两个来自 make-address 的环境变量
+;;; enviroment-id 在测试期间需要手动指定，当 object-table
+;;; 真正添加到 enviroment 时，需要采取自动化措施填写该参数。
+(define (object-table enviroment-id)
   (letrec ([row-index -1]
-           [eid (enviroment 'tail-eid)]
-           [address (lambda (dispatch)
-                      (cond [(eq? dispatch 'eid) eid]
-                            [(eq? dispatch 'row) row-index]))]
+           [eid enviroment-id]
            (make-address (lambda (eid row)
                            (lambda (dispatch)
                              (cond [(eq? dispatch 'eid) eid]
@@ -55,6 +56,9 @@
                                                                                 [(eq? dispatch 'name) name]
                                                                                 [(eq? dispatch 'value) value]))
                                                                         null]])))
+           (eq-address? (lambda (addr1 addr2)
+                          (and (equal? [addr1 'eid] [addr2 'eid])
+                               (equal? [addr1 'row] [addr2 'row]))))
            (get-object-by-name (lambda (name)
                                  (letrec ([f (lambda (lik)
                                                [if [mpair? lik]
@@ -68,7 +72,8 @@
            ;;; 对象表
            [objects null])
     (lambda (opt)
-      (cond [(eq? opt 'address) address]
+      (cond [(eq? opt 'current-eid) eid]
+            [(eq? opt 'row) row-index]
             [(eq? opt 'add)
              (set! row-index (+ row-index 1))
              (lambda (name value)
