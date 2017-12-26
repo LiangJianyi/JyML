@@ -32,6 +32,8 @@
 ;;; enviroment-id 在测试期间需要手动指定，当 object-table
 ;;; 真正添加到 enviroment 时，需要采取自动化措施填写该参数。
 (define (object-table enviroment-id)
+  ;;; letrec 绑定列表中的对象可以理解为一个类中的静态成员
+  ;;; add-entry 接收的参数可以理解为与对象专属的实例成员
   (letrec ([row-index -1]
            [eid enviroment-id]
            (make-address (lambda (eid row)
@@ -68,12 +70,23 @@
                                                    (error "对象未定义: " name)])])
                                    (f objects))))
            (get-object-by-address (lambda (address)
-                                    (get-element-by-value objects address)))
+                                    (let ([targets null])
+                                      (iterator-linkedlist objects (lambda (x)
+                                                                     (when [eq-address? (make-address [x 'current-eid] [x 'row]) address]
+                                                                       (set! targets (append-linkedlist targets [mcons x null])))))
+                                      [mcar targets])
+                                    ))
+           (display-object-info (lambda (obj)
+                                  (display (address-encode [obj 'addr])) (display "  ")
+                                  (display (obj 'name)) (display "  ")
+                                  (display (obj 'value)) (newline)))
            ;;; 对象表
            [objects null])
     (lambda (opt)
+      ;;; row-index 会随着对象在表中的分配与回收而改变其值
+      ;;; current-row 操作能显示该全局状态目前滚动的位置（将该值加一可用作 object-count）
       (cond [(eq? opt 'current-eid) eid]
-            [(eq? opt 'row) row-index]
+            [(eq? opt 'current-row) row-index]
             [(eq? opt 'add)
              (set! row-index (+ row-index 1))
              (lambda (name value)
@@ -85,4 +98,5 @@
                    (error "对象重复定义: " name))))]
             [(eq? opt 'get-object-by-name) get-object-by-name]
             [(eq? opt 'get-object-by-address) get-object-by-address]
+            [(eq? opt 'display-object-info) display-object-info]
             [else (error "无效的调用: " opt)]))))
