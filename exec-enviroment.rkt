@@ -3,9 +3,11 @@
 ;(require racket/exn)
 
 ;;; eid: 环境节点下标
-;;; object-tables: 是个存储对象表的 mlist,每个节点是一个 enviro-node
-;;; enviro-node: 环境节点，包含了eid和对象表
-(define (enviroment)
+;;; object-tables: 是个存储对象表的 mlist,每个节点是一个 enviro-node，其包含了eid和对象表
+;;; 整个解释器的生命周期只能有一个 environment， environment 的初始化方式如下： (define <var> (environment))
+;;; 通过一个变量接收其返回的 lambda（可理解为一个对象实例），才能在整个解释器生命周期中维持 eid, object-tables, enviro-node 三个状态
+;;; 该变量有且只有一个
+(define (environment)
   (let ([eid -1]
         [object-tables null]
         [enviro-node (lambda (eid table)
@@ -13,29 +15,27 @@
                          (cond [(eq? dispatch 'eid) eid]
                                [(eq? dispatch 'table) table])))])
     (lambda (opt)
-      (cond [(eq? opt 'add)
+      (cond [(eq? opt 'add-table)
              (set! eid (+ eid 1))
              (lambda (table)
                (set! object-tables [append-linkedlist object-tables [mcons (enviro-node eid table) null]]))]
-            [(eq? opt 'table)
+            [(eq? opt 'get-table-by-eid)
              (lambda (eid)
-               (get-element-by-value object-tables eid
-                                     (lambda (x)
-                                       (when [equal? eid (x 'eid)]
-                                         (x 'table)))))]
+               [mcar (get-element-by-value object-tables eid
+                                           (lambda (node) (node 'eid)))])]
             [(eq? opt 'tables) object-tables]
             [(eq? opt 'tail-eid) eid]
             [else (error "error operator: " opt)]))))
 
 ;;; 这里需要注意： address 是一个 proc，由 make-address 返回,
 ;;; 其带有一个参数和两个来自 make-address 的环境变量
-;;; enviroment-id 在测试期间需要手动指定，当 object-table
-;;; 真正添加到 enviroment 时，需要采取自动化措施填写该参数。
-(define (object-table enviroment-id)
+;;; environment-id 在测试期间需要手动指定，当 object-table
+;;; 真正添加到 environment 时，需要采取自动化措施填写该参数。
+(define (object-table environment-id)
   ;;; letrec 绑定列表中的对象可以理解为一个类中的静态成员
   ;;; add-entry 接收的参数可以理解为与对象专属的实例成员
   (letrec ([row-index -1]
-           [eid enviroment-id]
+           [eid environment-id]
            (make-address (lambda (eid row)
                            (lambda (dispatch)
                              (cond [(eq? dispatch 'eid) eid]
