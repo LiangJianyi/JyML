@@ -1,6 +1,6 @@
 #lang racket
 (require liangjianyi-racket/linkedlist)
-(require racket/exn)
+;(require racket/exn)
 
 ;;; eid: 环境节点下标
 ;;; object-tables: 是个存储对象表的 mlist,每个节点是一个 enviro-node
