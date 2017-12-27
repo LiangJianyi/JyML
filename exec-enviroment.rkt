@@ -56,7 +56,8 @@
                         (set! objects [append-linkedlist objects [mcons (lambda (dispatch)
                                                                           (cond [(eq? dispatch 'addr) addr]
                                                                                 [(eq? dispatch 'name) name]
-                                                                                [(eq? dispatch 'value) value]))
+                                                                                [(eq? dispatch 'value) value]
+                                                                                [else (error "对象不存在该属性: " dispatch)]))
                                                                         null]])))
            (eq-address? (lambda (addr1 addr2)
                           (and (equal? [addr1 'eid] [addr2 'eid])
@@ -69,12 +70,19 @@
                                                        (f [mcdr lik]))
                                                    (error "对象未定义: " name)])])
                                    (f objects))))
-           (get-object-by-address (lambda (address)
+           (get-object-by-address (lambda (address [option 'obj])
                                     (let ([targets null])
-                                      (iterator-linkedlist objects (lambda (x)
-                                                                     (when [eq-address? (make-address [x 'current-eid] [x 'row]) address]
-                                                                       (set! targets (append-linkedlist targets [mcons x null])))))
-                                      [mcar targets])
+                                      (cond [(eq? option 'obj)
+                                             (iterator-linkedlist objects (lambda (x)
+                                                                            (when [eq-address? (x 'addr) address]
+                                                                              (set! targets (append-linkedlist targets [mcons x null])))))]
+                                            [(eq? option 'code)
+                                             (iterator-linkedlist objects (lambda (x)
+                                                                            (when [eq-address? (x 'addr) (address-decode address)]
+                                                                              (set! targets (append-linkedlist targets [mcons x null])))))])
+                                      (if [null? targets]
+                                          (error "对象未定义，地址: " address)
+                                          [mcar targets]))
                                     ))
            (display-object-info (lambda (obj)
                                   (display (address-encode [obj 'addr])) (display "  ")
