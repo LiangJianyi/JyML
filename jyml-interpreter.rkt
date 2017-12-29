@@ -121,17 +121,19 @@
                                 [(not (find-node? number-collection e)) (error "类型无法识别: " node)])))
                     (string->number node))])]))
   
-  (define (string-boolean-mapping lex)
+  (define (lexica->boolean lex)
     (cond [(equal? lex "true") true]
           [(equal? lex "false") false]
           [(equal? lex "#t") #t]
           [(equal? lex "#f") #f]
           (error "类型无法识别: " lex)))
+
+  (define (lexica->string lex)
+    (substring lex 1 (- (string-length lex) 1)))
   
-  
-  [cond [(find-node? boolean-collection node) (string-boolean-mapping node)]
+  [cond [(find-node? boolean-collection node) (lexica->boolean node)]
         [(and (equal? double-quote [string-ref node 0])
-              (equal? double-quote [string-ref node (- [string-length node] 1)])) 'string]
+              (equal? double-quote [string-ref node (- [string-length node] 1)])) (lexica->string node)]
         [(find-node? procedures (string->symbol node)) (string->symbol "procedure")]
         [(equal? node "null") null]
         [else (cond [(equal? (string-ref node 0) quote) (string->symbol node)]
