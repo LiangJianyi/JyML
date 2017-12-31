@@ -5,6 +5,7 @@
 (require "./exec-enviroment.rkt")
 (require parser-tools/lex)
 
+(provide eval)
 
 (define (add node)
   (cond [(and [not (mpair? [mcar node])] [not (mpair? [mcdr node])])
@@ -49,16 +50,26 @@
 ;;; 当一个对象赋值为 lambda，那么该对象名就需要在表中登记
 ;;;
 (define procedures null)
-(set! procedures (append-linkedlist procedures [mcons (mcons [quote +] add) null]))
-(set! procedures (append-linkedlist procedures [mcons (mcons [quote -] sub) null]))
-(set! procedures (append-linkedlist procedures [mcons (mcons [quote *] multi) null]))
-(set! procedures (append-linkedlist procedures [mcons (mcons [quote /] div) null]))
+(set! procedures (append-linkedlist procedures [mcons (lambda (dispatch)
+                                                        (cond [(eq? dispatch 'proc-name) '+]
+                                                              [(eq? dispatch 'args-count) 'infinite]
+                                                              [(eq? dispatch 'proc-body) add])) null]))
+(set! procedures (append-linkedlist procedures [mcons (lambda (dispatch)
+                                                        (cond [(eq? dispatch 'proc-name) '-]
+                                                              [(eq? dispatch 'args-count) 'infinite]
+                                                              [(eq? dispatch 'proc-body) sub])) null]))
+(set! procedures (append-linkedlist procedures [mcons (lambda (dispatch)
+                                                        (cond [(eq? dispatch 'proc-name) '*]
+                                                              [(eq? dispatch 'args-count) 'infinite]
+                                                              [(eq? dispatch 'proc-body) multi])) null]))
+(set! procedures (append-linkedlist procedures [mcons (lambda (dispatch)
+                                                        (cond [(eq? dispatch 'proc-name) '/]
+                                                              [(eq? dispatch 'args-count) 'infinite]
+                                                              [(eq? dispatch 'proc-body) div])) null]))
 
 (define (get-proc-by-symbol lik key)
-  (unless (null? lik)
-    (if (equal? key [mcar (mcar lik)])
-        (mcdr [mcar lik])
-        (get-proc-by-symbol [mcdr lik] key))))
+  (with-handlers ([exn:fail? (lambda (e) (error "未绑定的 procedure: " key))])
+    [mcar (get-element-by-value lik key (lambda (x) (x 'proc-name)))]))
 
 (define (calc node)
   (define left [mcar node])
@@ -141,3 +152,20 @@
                          (find-node? number-collection (string-ref node 0)))
                      (build-number node)]
                     [else (error "类型无法识别: " node)])]])
+
+
+(define (eval ast)
+  (cond [(or [number? ast]
+             [symbol? ast]
+             [char? ast]
+             [string? ast]
+             [boolean? ast]
+             [null? ast])
+         ast]
+        [(pair? ast)
+         (if [pair? ast]
+             (begin
+               (eval [car ast])
+               (eval [cdr ast]))
+             ((get-proc-by-symbol [string->symbol [car ast]]) [cdr ast]))]
+        [else (error "I don't know!")]))
