@@ -1,48 +1,34 @@
 #lang racket
 (require liangjianyi-racket/linkedlist)
-(require liangjianyi-racket-sundry/utility)
 (require "./jyml-parser.rkt")
 (require "./exec-enviroment.rkt")
-(require parser-tools/lex)
 
 (provide eval)
 
 (define (add node)
-  (cond [(and [not (mpair? [mcar node])] [not (mpair? [mcdr node])])
-         (+ [mcar node] [mcdr node])]
-        [(and (mpair? [mcar node]) (mpair? [mcdr node]))
-         (+ [calc (mcar node)] [calc (mcdr node)])]
-        [(mpair? [mcar node])
-         (+ [calc (mcar node)] [mcdr node])]
-        [(mpair? [mcdr node])
-         (+ [mcar node] [calc (mcdr node)])]))
+  (letrec ([f (lambda (i k)
+                (if [= i 0]
+                    (k [list-ref node i])
+                    (f [- i 1] (lambda (x) (k (+ x [list-ref node i]))))))])
+    (f (- (length node) 1) (lambda (x) x))))
 (define (sub node)
-  (cond [(and [not (mpair? [mcar node])] [not (mpair? [mcdr node])])
-         (- [mcar node] [mcdr node])]
-        [(and (mpair? [mcar node]) (mpair? [mcdr node]))
-         (- [calc (mcar node)] [calc (mcdr node)])]
-        [(mpair? [mcar node])
-         (- [calc (mcar node)] [mcdr node])]
-        [(mpair? [mcdr node])
-         (- [mcar node] [calc (mcdr node)])]))
+  (letrec ([f (lambda (i k)
+                (if [= i 0]
+                    (k [list-ref node i])
+                    (f [- i 1] (lambda (x) (k (- x [list-ref node i]))))))])
+    (f (- (length node) 1) (lambda (x) x))))
 (define (multi node)
-  (cond [(and [not (mpair? [mcar node])] [not (mpair? [mcdr node])])
-         (* [mcar node] [mcdr node])]
-        [(and (mpair? [mcar node]) (mpair? [mcdr node]))
-         (* [calc (mcar node)] [calc (mcdr node)])]
-        [(mpair? [mcar node])
-         (* [calc (mcar node)] [mcdr node])]
-        [(mpair? [mcdr node])
-         (* [mcar node] [calc (mcdr node)])]))
+  (letrec ([f (lambda (i k)
+                (if [= i 0]
+                    (k [list-ref node i])
+                    (f [- i 1] (lambda (x) (k (* x [list-ref node i]))))))])
+    (f (- (length node) 1) (lambda (x) x))))
 (define (div node)
-  (cond [(and [not (mpair? [mcar node])] [not (mpair? [mcdr node])])
-         (/ [mcar node] [mcdr node])]
-        [(and (mpair? [mcar node]) (mpair? [mcdr node]))
-         (/ [calc (mcar node)] [calc (mcdr node)])]
-        [(mpair? [mcar node])
-         (/ [calc (mcar node)] [mcdr node])]
-        [(mpair? [mcdr node])
-         (/ [mcar node] [calc (mcdr node)])]))
+  (letrec ([f (lambda (i k)
+                (if [= i 0]
+                    (k [list-ref node i])
+                    (f [- i 1] (lambda (x) (k (/ x [list-ref node i]))))))])
+    (f (- (length node) 1) (lambda (x) x))))
 
 
 ;;; 判断一个数据是不是过程就看它是否在 procedures 表中存在
@@ -71,12 +57,12 @@
   (with-handlers ([exn:fail? (lambda (e) (error "未绑定的 procedure: " key))])
     [mcar (get-element-by-value lik key (lambda (x) (x 'proc-name)))]))
 
-(define (calc node)
-  (define left [mcar node])
-  (define right [mcdr node])
-  (cond [(symbol? left) ([get-proc-by-symbol procedures left] right)]
-        [(number? left) left]
-        [(mpair? left) (calc [mcar left]) (calc [mcdr left])]))
+;(define (calc node)
+;  (define left [mcar node])
+;  (define right [mcdr node])
+;  (cond [(symbol? left) ([get-proc-by-symbol procedures left] right)]
+;        [(number? left) left]
+;        [(mpair? left) (calc [mcar left]) (calc [mcdr left])]))
 
 
 ;;; name: 对象名字
@@ -163,9 +149,7 @@
              [null? ast])
          ast]
         [(pair? ast)
-         (if [pair? ast]
-             (begin
-               (eval [car ast])
-               (eval [cdr ast]))
-             ((get-proc-by-symbol [string->symbol [car ast]]) [cdr ast]))]
-        [else (error "I don't know!")]))
+         (eval [car ast])
+         (eval [cdr ast])]
+        [else
+         ((get-proc-by-symbol [string->symbol [car ast]]) [cdr ast])]))
