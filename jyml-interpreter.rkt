@@ -152,4 +152,4 @@
          (eval [car ast])
          (eval [cdr ast])]
         [else
-         ((get-proc-by-symbol [string->symbol [car ast]]) [cdr ast])]))
+         (((get-proc-by-symbol [string->symbol [car ast]]) 'proc-body) [cdr ast])]))
