@@ -5,6 +5,7 @@
 (require "../exec-enviroment.rkt")
 (require compatibility/mlist)
 
-(define path "")
+(define path "jyml-text.jyml")
 (define code-text (read-jyml-file path))
 (define ast (parse (mlist->list (tokenizer code-text))))
+(eval ast)
