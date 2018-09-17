@@ -4,6 +4,8 @@
 (require "./exec-enviroment.rkt")
 
 (provide eval)
+(provide inferred-type)
+(provide result-set)
 
 (define (add node)
   (letrec ([f (lambda (i k)
@@ -53,9 +55,9 @@
                                                               [(eq? dispatch 'args-count) 'infinite]
                                                               [(eq? dispatch 'proc-body) div])) null]))
 
-(define (get-proc-by-symbol lik key)
+(define (get-proc-by-symbol key)
   (with-handlers ([exn:fail? (lambda (e) (error "未绑定的 procedure: " key))])
-    [mcar (get-element-by-value lik key (lambda (x) (x 'proc-name)))]))
+    [mcar (get-element-by-value procedures key (lambda (x) (x 'proc-name)))]))
 
 ;(define (calc node)
 ;  (define left [mcar node])
@@ -71,6 +73,7 @@
 (define (mydefine name obj table)
   ((table 'add) name obj))
 
+; node 必须是 ast 的原子节点
 (define (inferred-type node)
   (define number-collection (string->linkedlist "0123456789"))
   (define point #\.)
@@ -141,15 +144,39 @@
 
 
 (define (eval ast)
-  (cond [(or [number? ast]
+  (cond [(pair? ast)
+         (eval [car ast])
+         (eval [cdr ast])]
+        [(or [number? ast]
              [symbol? ast]
              [char? ast]
              [string? ast]
              [boolean? ast]
              [null? ast])
          ast]
-        [(pair? ast)
-         (eval [car ast])
-         (eval [cdr ast])]
         [else
          (((get-proc-by-symbol [string->symbol [car ast]]) 'proc-body) [cdr ast])]))
+
+; 存放由 eval 返回 top-level 的值
+(define result-set null)
+; ast 必须是一个经过类型推导的 ast
+(define (eval-2 ast)
+  (cond [(or [number? ast]
+             [symbol? ast]
+             [char? ast]
+             [string? ast]
+             [boolean? ast]
+             [null? ast])
+         (set! result-set (list (append result-set ast)))]
+        [(pair? ast)
+         (if [pair? [car ast]]
+             (eval-2 [car ast])
+             (set! result-set
+                   (list (append ast (((get-proc-by-symbol [string->symbol [car ast]]) 'proc-body) [cdr ast])))))
+         ;(eval-2 [car ast])
+         ;(eval-2 [cdr ast])
+         ]))
+
+(define ast (list (list "+" 1 2 3 4 5)))
+(eval-2 ast)
+result-set
