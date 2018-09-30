@@ -1,6 +1,86 @@
 #lang racket
 (require compatibility/mlist)
 
+(define (true? x) (not (eq? x false)))
+
+(define (false? x) (eq? x false))
+
+(define (map proc items)
+    (if [null? items]
+        null
+        (mcons (proc [mcar items])
+                (map proc [mcdr items]))))
+
+(define (tagged-list? exp tag)
+    (if (mpair? exp)
+        (eq? (mcar exp) tag)
+        false))
+
+(define (eval exp env)
+    (cond   [[self-evaluating? exp] exp]
+            [[variable? exp] (lookup-variable-value exp env)]
+            [[quoted? exp] (text-of-quotation exp)]
+            [[assignment? exp] (eval-assignment exp env)]
+            [[definition? exp] (eval-definition exp env)]
+            [[if? exp] (eval-if exp env)]
+            [[lambda? exp]
+            (make-lambda    (lambda-parameters exp)
+                            (lambda-body exp)
+                            env)]
+            [[begin? exp] (eval-sequence (begin-actions exp) env)]
+            [[cond? exp] (eval (cond->if exp) env)]
+            [[application? exp] 
+            (apply  (eval (operator exp) env) 
+                    (list-of-values (operands exp) env))]
+            [else (error "Unknow expression type -- eval" exp)]))
+
+(define (apply procedure arguments)
+    (cond   [(primitive-procedure? procedure)
+            (apply-primitive-procedure procedure arguments)]
+            [(compound-procedure? procedure)
+            (eval-sequence (procedure-body procedure) (extend-enviroment
+                                                        (procedure-parameters procedure)
+                                                        arguments
+                                                        (procedure-enviroment procedure)))]
+            [else (error "Unknown procedure type -- Apply" procedure)]))
+
+;; eval 在处理过程应用时用 list-of-values 去生成实际参数表，以便完成这一过程应用。
+;; list-of-values 以组合式的运算对象作为参数，求值各个运算对象，返回这些值的表
+(define (list-of-values exps env)
+    (if [no-operands? exps]
+        null
+        (mcons  (eval (first-operand exps) env)
+                (list-of-values (rest-operands exps) env))))
+
+;; eval-if 在给定环境中求值 if 表达式的谓词部分，如果得到的结果为真，eval-if 就去求值这个 if 的
+;; consequent 部分，否则求值其 alternative 部分
+(define (eval-if exp env)
+    (if [true? (eval (if-predicate exp) env)]
+        (eval (if-consequent exp) env)
+        (eval (if-alternative exp) env)))
+
+;; eval-sequence 用在 apply 里，用于求值过程体里的表达式序列。它也用在 eval 里，用于
+;; 求值 begin 表达式里的表达式序列。这个过程以一个表达式序列和一个环境为参数，按照序列里
+;; 的表达式出现的顺序对它们求值。它返回最后一个表达式的值。
+(define (eval-sequence exps env)
+    (cond   [(last-exp? exps) (eval (first-exp exps) env)]
+            [else   (eval (first-exp exps) env)
+                    (eval-sequence (rest-exps exps) env)]))
+
+;; eval-assignment 调用 eval 找出需要赋的值，将变量和得到的值传给过程 set-variable-value!，
+;; 将有关的值安置到指定环境里
+(define (eval-assignment exp env)
+    (set-variable-value!    (assignment-variable exp)
+                            (eval (assignment-value exp) env)
+                            env)
+    'ok)
+
+;; 变量定义也用类似的方法处理
+(define (eval-definition exp env)
+    (define-variable!   (definition-variable exp)
+                        (eval (definition-value exp) env)
+                        env))
+
 (define (self-evaluating? exp)
     (cond   [(number? exp) true]
             [(string? exp) true]
@@ -31,7 +111,7 @@
 (define (definition-variable exp) 
     (if [symbol? [mcar [mcdr exp]]]
         [mcar [mcdr exp]]
-        [mcar [mcar [mcdr exp]]]]))
+        [mcar [mcar [mcdr exp]]]))
 
 (define (definition-value exp) 
     (if [symbol? [mcar [mcdr exp]]]
@@ -87,6 +167,49 @@
             [(last-exp? seq) (first-exp seq)]
             [else (make-begin seq)]))
 
+;; 过程 application 就是不属于上述各种表达式类型的任意复合表达式，
+;; 这种表达式的 mcar 是运算符，其 mcdr 是运算对象的表
+
+(define (application? exp) (mpair? exp))
+
+(define (operator exp) (mcar exp))
+
+(define (operands exp) (mcdr exp))
+
+(define (no-operands? ops) (null? ops))
+
+(define (first-operand ops) [mcar ops])
+
+(define (rest-operands ops) [mcdr ops])
+
+;; 一些特殊的语法形式可以基于其它的语法形式的表达式定义出来，而不必直接去实现 cond 便可以由一些嵌套的 if 表达式配合 begin 实现出来，
+;; cond 包含若干个谓词，每个谓词对应若干个动作子句组成的表；如果一个子句的符号是 else，那么就是一个 else 子句
+
+(define (cond? exp) (tagged-list? exp 'cond))
+
+(define (cond-clauses exp) [mcdr exp])
+
+(define (cond-else-clauses? clause) (eq? (cond-predicate clause) 'else))
+
+(define (cond-predicate clause) [mcar clause])
+
+(define (cond-actions clause) [mcdr clause])
+
+(define (cond->if exp) (expand-clauses (cond-clauses exp)))
+
+(define (expand-clauses clauses)
+    (if [null? clauses]
+        'false
+        (let (  [first [mcar clauses]]
+                [rest [mcdr clauses]])
+            (if (cond-else-clauses? first)
+                (if (null? rest)
+                    (sequence->exp (cond-actions first))
+                    (error "else clause isn't last -- cond->if" clauses))
+                (make-if    (cond-predicate first)
+                            (sequence->exp (cond-actions first))
+                            (expand-clauses rest))))))
+
 ;;;;;;;;;;;;;;;;;;;过程的表示
 (define (make-procedure parameters body env)
     (mlist 'procedure parameters body env))
@@ -105,17 +228,6 @@
 (define (first-frame env) [mcar env])
 
 (define the-empty-enviroment null)
-
-(define (map proc items)
-    (if [null? items]
-        null
-        (mcons (proc [mcar items])
-                (map proc [mcdr items]))))
-
-(define (tagged-list? exp tag)
-    (if (mpair? exp)
-        (eq? (mcar exp) tag)
-        false))
 
 (define (make-frame variables values)
     (mcons variables values))
