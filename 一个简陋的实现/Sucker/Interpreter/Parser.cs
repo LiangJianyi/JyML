@@ -25,21 +25,12 @@ using System.Collections.Generic;
 	 */
 
 namespace JymlParser {
-    public class Parser {
+    public static class Parser {
         private static readonly List<string> _beginMarks = new List<string>() { "(", "[" };
 
-        internal static bool IsLambda(Cons ast) => GetTagOfList(ast, "lambda");
-
         private static readonly List<string> _endMarks = new List<string>() { ")", "]" };
-        public static readonly Cons TopEval = new Cons(null, null);
 
-        public static Cons GetLambdaBody(Cons ast) => (ast.cdr as Cons).cdr as Cons;
-
-        private Cons _tokens;
-
-        public Parser(Cons tokens) => _tokens = tokens;
-
-        public Cons GenerateAst() {
+        private static Cons GenerateAst() {
             if (_tokens == null) {
                 return null;
             }
@@ -58,6 +49,18 @@ namespace JymlParser {
                     return new Cons(token, GenerateAst());
                 }
             }
+        }
+
+        private static Cons _tokens;
+
+        public static bool IsLambda(Cons ast) => GetTagOfList(ast, "lambda");
+
+        public static Cons GetLambdaBody(Cons ast) => (ast.cdr as Cons).cdr as Cons;
+
+        public static Cons GenerateAst(string text) {
+            Tokenizer tokenizer = new Tokenizer(text, new char[] { ' ' }, new char[] { '(', ')', '[', ']' });
+            _tokens = Cons.FromArray(tokenizer.GetTokens());
+            return GenerateAst();
         }
 
         public static bool IsBegin(Cons ast) => GetTagOfList(ast, "begin");

@@ -5,6 +5,9 @@ using System.Numerics;
 
 namespace JymlTypeSystem {
     public abstract class JymlType {
+        internal static JymlType CreateType(string str) {
+            throw new NotImplementedException();
+        }
     }
 
     public class Boolean : JymlType {
