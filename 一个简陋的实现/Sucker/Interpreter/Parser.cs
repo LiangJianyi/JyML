@@ -53,48 +53,17 @@ namespace JymlParser {
 
         private static Cons _tokens;
 
-        /// <summary>
-        /// 清除 token 两边的控制字符和空白字符
-        /// </summary>
-        /// <param name="tokens"></param>
-        private static void CleanUpTokens(this Cons tokens) {
-            if (tokens != null) {
-                if (tokens.car is string str) {
-                    int controlIndex = -1;
-                    for (int i = 0; i < str.Length; i++) {
-                        if (char.IsControl(str[i]) && char.IsWhiteSpace(str[i])) {
-                            if (i == 0) {
-                                controlIndex = i;
-                            }
-                            else {
-                                str = str.Substring(i);
-                            }
-                        }
-                        else {
-                            if (controlIndex == 0) {
-                                str = str.Substring(controlIndex, i);
-                            }
-                        }
-                    }
-                    tokens.car = str;
-                    CleanUpTokens(tokens.cdr as Cons);
-                }
-                else {
-                    throw new FormatException();
-                }
-            }
-        }
-
         public static bool IsLambda(Cons ast) => GetTagOfList(ast, "lambda");
 
         public static Cons GetLambdaBody(Cons ast) => (ast.cdr as Cons).cdr as Cons;
 
         public static Cons GenerateAst(string text) {
-            Tokenizer tokenizer = new Tokenizer(text, new char[] { ' ' }, new char[] { '(', ')', '[', ']' });
-            _tokens = Cons.FromArray(tokenizer.GetTokens());
-            _tokens.CleanUpTokens();
+            Tokenizer tokenizer = new Tokenizer(text, new char[] { ' ', '\n' }, new char[] { '(', ')', '[', ']' });
+            tokenizer.CleanUpTokens();
+            _tokens = Cons.FromArray(tokenizer.Tokens);
             if (_tokens.car as string == "#lang") {
                 string lang = (_tokens.cdr as Cons).car as string;
+                _tokens = (_tokens.cdr as Cons).cdr as Cons;
                 if (lang == "SuckerML") {
                     // 调用 SuckerML 解释器
                     return GenerateAst();
@@ -108,7 +77,7 @@ namespace JymlParser {
                 }
             }
             else {
-                throw new FormatException("语法错误。");
+                throw new FormatException("缺失语言指示符 #lang");
             }
         }
 
