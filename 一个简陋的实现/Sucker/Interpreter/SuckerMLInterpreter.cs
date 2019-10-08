@@ -1,26 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Numerics;
 using JymlAST;
 
 namespace Interpreter {
-    static class SuckerMLInterpreter {
-        public class DayNode {
-            public BigInteger Day { get; private set; }
-            public BigInteger Total { get; private set; }
-            public DayNode(BigInteger day, BigInteger total) {
-                Day = day;
-                Total = total;
+    public static class SuckerMLInterpreter {
+        public class DayNode : IComparable<DayNode> {
+            public int Day { get; private set; }
+            public BigInteger Total { get; set; }
+            public DayNode(int day, BigInteger total) {
+                if (day > 0) {
+                    Day = day;
+                }
+                else {
+                    throw new Exception();
+                }
+                if (total > 0) {
+                    Total = total;
+                }
+                else {
+                    throw new Exception($"Total 值必须大于 0。total = {total}");
+                }
+            }
+
+            int IComparable<DayNode>.CompareTo(DayNode other) {
+                if (this.Day == other.Day) {
+                    return 0;
+                }
+                else if (this.Day > other.Day) {
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
             }
         }
         public class MonthNode {
-            public BigInteger Month { get; private set; }
-            public List<DayNode> Days { get; private set; }
-            public MonthNode(BigInteger month) {
-                Month = month;
-                Days = new List<DayNode>();
+            public int Month { get; private set; }
+            public SortedList<int, DayNode> Days { get; private set; }
+            public MonthNode(int month) {
+                if (month <= 12 && month > 0) {
+                    Month = month;
+                }
+                else {
+                    throw new Exception($"Month 值必须介于 1 到 12 之间。Month = {month}");
+                }
+                Days = new SortedList<int, DayNode>();
             }
             public MonthNode(string exp) {
                 switch (exp.ToLower()) {
@@ -63,21 +88,50 @@ namespace Interpreter {
                     default:
                         throw new Exception("无效的月份缩写");
                 }
-                Days = new List<DayNode>();
+                Days = new SortedList<int, DayNode>();
             }
         }
         public class YearNode {
             public BigInteger Year { get; private set; }
-            public List<MonthNode> Months { get; private set; }
+            public SortedList<int, MonthNode> Months { get; private set; }
             public YearNode(BigInteger year) {
-                Year = year;
-                Months = new List<MonthNode>();
+                if (year > 0) {
+                    Year = year;
+                }
+                else {
+                    throw new Exception($"无效的年份表示。year：{year}");
+                }
+                Months = new SortedList<int, MonthNode>();
+            }
+        }
+
+        private static void Add(this SortedList<int, DayNode> days, DayNode day) {
+            try {
+                days.Add(day.Day, day);
+            }
+            catch (ArgumentException) {
+                days[day.Day].Total += day.Total;
+            }
+        }
+
+        private static void Add(this SortedList<int, MonthNode> months, MonthNode month) {
+            try {
+                months.Add(month.Month, month);
+            }
+            catch (ArgumentException) {
+                months[month.Month].Days.Addpend(month.Days);
+            }
+        }
+
+        private static void Addpend(this SortedList<int, DayNode> days, SortedList<int, DayNode> newdays) {
+            foreach (var item in newdays) {
+                days.Add(item.Value);
             }
         }
 
         public static DayNode EvalDay(Cons cons) {
             if ((cons.car as string).ToLower() == "day-total") {
-                BigInteger day = BigInteger.Parse((cons.cdr as Cons).car as string);
+                int day = Convert.ToInt32((cons.cdr as Cons).car as string);
                 BigInteger total = BigInteger.Parse(((cons.cdr as Cons).cdr as Cons).car as string);
                 return new DayNode(day, total);
             }

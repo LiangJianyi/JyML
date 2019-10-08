@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using JymlParser;
 using JymlAST;
+using Interpreter;
 
 namespace Repl {
     class Program {
         static void Main(string[] args) {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML2.mast";
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML.mast";
             string text = System.IO.File.ReadAllText(path);
             Cons ast = Parser.GenerateAst(text);
-            PrintAst(ast);
-
-            //Test1();
+            Test2(ast);
 
             Console.ReadKey();
         }
@@ -49,6 +48,19 @@ namespace Repl {
             tokenizer.CleanUpTokens();
             foreach (var item in tokenizer.Tokens) {
                 Console.WriteLine(item);
+            }
+        }
+
+        private static void Test2(Cons ast) {
+            List<SuckerMLInterpreter.YearNode> yearNodes = SuckerMLInterpreter.Eval(ast);
+            foreach (var year in yearNodes) {
+                Console.WriteLine($"Year {year.Year}:");
+                foreach (var month in year.Months) {
+                    Console.WriteLine($"    Month {month.Value.Month}:");
+                    foreach (var day in month.Value.Days) {
+                        Console.WriteLine($"        Day:{day.Value.Day}, Total:{day.Value.Total}");
+                    }
+                }
             }
         }
     }
