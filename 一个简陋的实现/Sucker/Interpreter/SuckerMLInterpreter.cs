@@ -35,6 +35,7 @@ namespace Interpreter {
                 }
             }
         }
+
         public class MonthNode : IComparable<MonthNode> {
             public int Month { get; private set; }
             public SortedList<int, DayNode> Days { get; private set; }
@@ -103,6 +104,7 @@ namespace Interpreter {
                 }
             }
         }
+
         public class YearNode : IComparable<YearNode> {
             public BigInteger Year { get; private set; }
             public SortedList<int, MonthNode> Months { get; private set; }
@@ -125,6 +127,15 @@ namespace Interpreter {
                 }
                 else {
                     return -1;
+                }
+            }
+        }
+
+        public class Sucker {
+            public SortedList<BigInteger, YearNode> Years { get; } = new SortedList<BigInteger, YearNode>();
+            public Sucker(Cons ast) {
+                foreach (Cons node in ast) {
+                    Years.Add(EvalYear(node));
                 }
             }
         }
@@ -207,12 +218,8 @@ namespace Interpreter {
             }
         }
 
-        public static SortedList<BigInteger, YearNode> Eval(Cons ast) {
-            SortedList<BigInteger, YearNode> years = new SortedList<BigInteger, YearNode>();
-            foreach (Cons node in ast) {
-                years.Add(EvalYear(node));
-            }
-            return years;
+        public static Sucker Eval(Cons ast) {
+            return new Sucker(ast);
         }
     }
 }

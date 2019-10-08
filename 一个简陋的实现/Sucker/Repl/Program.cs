@@ -52,8 +52,8 @@ namespace Repl {
         }
 
         private static void Test2(Cons ast) {
-            SortedList<System.Numerics.BigInteger, SuckerMLInterpreter.YearNode> yearNodes = SuckerMLInterpreter.Eval(ast);
-            foreach (var year in yearNodes) {
+            SuckerMLInterpreter.Sucker sucker = SuckerMLInterpreter.Eval(ast);
+            foreach (var year in sucker.Years) {
                 Console.WriteLine($"Year {year.Value.Year}:");
                 foreach (var month in year.Value.Months) {
                     Console.WriteLine($"    Month {month.Value.Month}:");
