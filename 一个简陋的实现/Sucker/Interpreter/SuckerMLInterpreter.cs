@@ -35,7 +35,7 @@ namespace Interpreter {
                 }
             }
         }
-        public class MonthNode {
+        public class MonthNode : IComparable<MonthNode> {
             public int Month { get; private set; }
             public SortedList<int, DayNode> Days { get; private set; }
             public MonthNode(int month) {
@@ -90,8 +90,20 @@ namespace Interpreter {
                 }
                 Days = new SortedList<int, DayNode>();
             }
+
+            int IComparable<MonthNode>.CompareTo(MonthNode other) {
+                if (this.Month == other.Month) {
+                    return 0;
+                }
+                else if (this.Month > other.Month) {
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
+            }
         }
-        public class YearNode {
+        public class YearNode : IComparable<YearNode> {
             public BigInteger Year { get; private set; }
             public SortedList<int, MonthNode> Months { get; private set; }
             public YearNode(BigInteger year) {
@@ -102,6 +114,18 @@ namespace Interpreter {
                     throw new Exception($"无效的年份表示。year：{year}");
                 }
                 Months = new SortedList<int, MonthNode>();
+            }
+
+            int IComparable<YearNode>.CompareTo(YearNode other) {
+                if (this.Year == other.Year) {
+                    return 0;
+                }
+                else if (this.Year > other.Year) {
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
             }
         }
 
@@ -123,13 +147,28 @@ namespace Interpreter {
             }
         }
 
-        private static void Addpend(this SortedList<int, DayNode> days, SortedList<int, DayNode> newdays) {
-            foreach (var item in newdays) {
+        private static void Add(this SortedList<BigInteger, YearNode> years, YearNode year) {
+            try {
+                years.Add(year.Year, year);
+            }
+            catch (ArgumentException) {
+                years[year.Year].Months.Addpend(year.Months);
+            }
+        }
+
+        private static void Addpend(this SortedList<int, DayNode> days, SortedList<int, DayNode> newDays) {
+            foreach (var item in newDays) {
                 days.Add(item.Value);
             }
         }
 
-        public static DayNode EvalDay(Cons cons) {
+        private static void Addpend(this SortedList<int, MonthNode> months, SortedList<int, MonthNode> newMonths) {
+            foreach (var item in newMonths) {
+                months.Add(item.Value);
+            }
+        }
+
+        private static DayNode EvalDay(Cons cons) {
             if ((cons.car as string).ToLower() == "day-total") {
                 int day = Convert.ToInt32((cons.cdr as Cons).car as string);
                 BigInteger total = BigInteger.Parse(((cons.cdr as Cons).cdr as Cons).car as string);
@@ -140,7 +179,7 @@ namespace Interpreter {
             }
         }
 
-        public static MonthNode EvalMonth(Cons cons) {
+        private static MonthNode EvalMonth(Cons cons) {
             if ((cons.car as string).ToLower() == "month") {
                 MonthNode month = new MonthNode((cons.cdr as Cons).car as string);
                 Cons daysCollection = (cons.cdr as Cons).cdr as Cons;
@@ -154,7 +193,7 @@ namespace Interpreter {
             }
         }
 
-        public static YearNode EvalYear(Cons cons) {
+        private static YearNode EvalYear(Cons cons) {
             if ((cons.car as string).ToLower() == "year") {
                 YearNode year = new YearNode(BigInteger.Parse((cons.cdr as Cons).car as string));
                 Cons monthCollection = (cons.cdr as Cons).cdr as Cons;
@@ -168,8 +207,8 @@ namespace Interpreter {
             }
         }
 
-        public static List<YearNode> Eval(Cons ast) {
-            List<YearNode> years = new List<YearNode>();
+        public static SortedList<BigInteger, YearNode> Eval(Cons ast) {
+            SortedList<BigInteger, YearNode> years = new SortedList<BigInteger, YearNode>();
             foreach (Cons node in ast) {
                 years.Add(EvalYear(node));
             }

@@ -52,10 +52,10 @@ namespace Repl {
         }
 
         private static void Test2(Cons ast) {
-            List<SuckerMLInterpreter.YearNode> yearNodes = SuckerMLInterpreter.Eval(ast);
+            SortedList<System.Numerics.BigInteger, SuckerMLInterpreter.YearNode> yearNodes = SuckerMLInterpreter.Eval(ast);
             foreach (var year in yearNodes) {
-                Console.WriteLine($"Year {year.Year}:");
-                foreach (var month in year.Months) {
+                Console.WriteLine($"Year {year.Value.Year}:");
+                foreach (var month in year.Value.Months) {
                     Console.WriteLine($"    Month {month.Value.Month}:");
                     foreach (var day in month.Value.Days) {
                         Console.WriteLine($"        Day:{day.Value.Day}, Total:{day.Value.Total}");
