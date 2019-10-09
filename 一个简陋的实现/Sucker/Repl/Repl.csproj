@@ -33,6 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Cons">
+      <HintPath>..\..\..\..\SundryUtilty\.NET Standard\Sucker\Cons\bin\Debug\netstandard2.0\Cons.dll</HintPath>
+    </Reference>
+    <Reference Include="SuckerInterpreter">
+      <HintPath>..\..\..\..\SundryUtilty\.NET Standard\Sucker\SuckerInterpreter\bin\Debug\netstandard2.0\SuckerInterpreter.dll</HintPath>
+    </Reference>
+    <Reference Include="SuckerParser">
+      <HintPath>..\..\..\..\SundryUtilty\.NET Standard\Sucker\SuckerParser\bin\Debug\netstandard2.0\SuckerParser.dll</HintPath>
+    </Reference>
+    <Reference Include="SuckerTypeSystem">
+      <HintPath>..\..\..\..\SundryUtilty\.NET Standard\Sucker\SuckerInterpreter\bin\Debug\netstandard2.0\SuckerTypeSystem.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -49,12 +61,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Interpreter\Interpreter.csproj">
-      <Project>{0bb24505-697e-497f-8482-96a938e035ef}</Project>
-      <Name>Interpreter</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
