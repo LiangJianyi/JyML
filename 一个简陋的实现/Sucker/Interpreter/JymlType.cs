@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using JymlEnvironment;
 
 namespace JymlTypeSystem {
     public abstract class JymlType {
@@ -54,8 +55,7 @@ namespace JymlTypeSystem {
         public System.DateTime Date { get; private set; }
 
         public DateTime(string exp) {
-            string[] tokens = null;
-            tokens = exp.Split('/');
+            string[] tokens = exp.Split('/');
             if (tokens.Length == 3) {
                 int monthValue = Convert.ToInt32(tokens[0]);
                 int dayValue = Convert.ToInt32(tokens[1]);
@@ -76,6 +76,16 @@ namespace JymlTypeSystem {
     /// 代表解释器的过程
     /// </summary>
     public class Procedures : JymlType {
+        private readonly string _name;
+        private readonly JymlEnviroment[] _arguments;
+        private readonly JymlAST.Cons _body;
+
+        private string GenerateName() {
+            Random random = new Random();
+            const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
         public override string ToString() {
             throw new NotImplementedException();
         }
