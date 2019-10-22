@@ -13,7 +13,7 @@ namespace Interpreter {
                 return exp;
             }
             else if (Parser.IsVariable(exp)) {
-                return new Cons(env.Frame[exp]);
+                return new Cons(env.FrameNode[exp.car as string].Variable);
             }
             else if (Parser.IsAssignment(exp)) {
                 return EvalAssignment(exp, env);
@@ -29,6 +29,12 @@ namespace Interpreter {
             }
             else if (Parser.IsBegin(exp)) {
                 return EvalSequence(BeginActions(exp));
+            }
+            else {
+                return Apply(
+                    Eval(exp.car as Cons, env),
+                    ListOfValues(exp.cdr as Cons, env)
+                );
             }
         }
     }
