@@ -11,6 +11,8 @@ namespace JymlTypeSystem {
         }
     }
 
+    public class Null : JymlType { }
+
     public class Boolean : JymlType {
         private bool _bool;
 
@@ -40,14 +42,27 @@ namespace JymlTypeSystem {
     }
 
     public class Number : JymlType {
-        public override string ToString() {
-            throw new NotImplementedException();
-        }
+        private BigInteger _number;
+
+        public Number(string exp) => this._number = BigInteger.Parse(exp);
+
+        public override string ToString() => _number.ToString();
     }
 
     public class String : JymlType {
+        private string _string;
+
+        public String(string exp) {
+            if (exp[0] == '"' && exp[exp.Length - 1] == '"') {
+                _string = exp.Substring(exp.Length - 1, 1).Substring(0, 1);
+            }
+            else {
+                throw new Exception("字符串缺乏双引号");
+            }
+        }
+
         public override string ToString() {
-            throw new NotImplementedException();
+            return _string;
         }
     }
 
@@ -88,6 +103,17 @@ namespace JymlTypeSystem {
 
         public override string ToString() {
             throw new NotImplementedException();
+        }
+    }
+
+    public class PrimitiveProcedure : JymlType {
+        private readonly Dictionary<string, Func<BigInteger, BigInteger, BigInteger>> _primitiveProcedures = new Dictionary<string, Func<BigInteger, BigInteger, BigInteger>>();
+
+        public Dictionary<string, Func<BigInteger, BigInteger, BigInteger>> PrimitiveProcedures => _primitiveProcedures;
+
+        public PrimitiveProcedure() {
+            _primitiveProcedures.Add("Add", (BigInteger x, BigInteger y) => x + y);
+            _primitiveProcedures.Add("Sub", (BigInteger x, BigInteger y) => x - y);
         }
     }
 }
