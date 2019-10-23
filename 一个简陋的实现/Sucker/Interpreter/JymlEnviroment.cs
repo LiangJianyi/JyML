@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Interpreter {
+namespace JymlEnvironment {
     public class JymlEnviroment {
         public JymlEnviroment Enviroment { get; set; }
 
@@ -42,15 +42,20 @@ namespace Interpreter {
 
         public void DefineVariable(string var,JymlType val) {
             if (FrameNode[var]!=null) {
-                throw new Exception($"变量 {var} 重定义。")；
+                throw new Exception($"变量 {var} 重定义。");
             }
             else {
                 FrameNode.AddBidingToFrame(var, val);
             }
         }
 
-        public static void SetUpEnvironment() {
-
+        public static Cons SetUpEnvironment() {
+            JymlEnviroment initialEnv = new JymlEnviroment();
+            return initialEnv.ExtendEnvironment(
+                JymlType._primitiveProcedures.Keys.ToArray(),
+                JymlType._primitiveProcedures.Values.ToArray(),
+                null
+            );
         }
     }
 }

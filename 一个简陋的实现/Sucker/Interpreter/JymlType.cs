@@ -6,6 +6,12 @@ using JymlEnvironment;
 
 namespace JymlTypeSystem {
     public abstract class JymlType {
+        public static readonly Dictionary<string, PrimitiveProcedure> _primitiveProcedures =
+            new Dictionary<string, PrimitiveProcedure>(){
+                { "Add", new PrimitiveProcedure("Add",(BigInteger x, BigInteger y) => x + y) },
+                { "Sub", new PrimitiveProcedure("Sub",(BigInteger x, BigInteger y) => x - y) }
+            };
+
         public static JymlType CreateType(string str) {
             throw new NotImplementedException();
         }
@@ -107,13 +113,14 @@ namespace JymlTypeSystem {
     }
 
     public class PrimitiveProcedure : JymlType {
-        private readonly Dictionary<string, Func<BigInteger, BigInteger, BigInteger>> _primitiveProcedures = new Dictionary<string, Func<BigInteger, BigInteger, BigInteger>>();
+        public string Name { get; private set; }
+        public Func<BigInteger, BigInteger, BigInteger> Proc { get; private set; }
 
-        public Dictionary<string, Func<BigInteger, BigInteger, BigInteger>> PrimitiveProcedures => _primitiveProcedures;
-
-        public PrimitiveProcedure() {
-            _primitiveProcedures.Add("Add", (BigInteger x, BigInteger y) => x + y);
-            _primitiveProcedures.Add("Sub", (BigInteger x, BigInteger y) => x - y);
+        public PrimitiveProcedure(string name, Func<BigInteger, BigInteger, BigInteger> proc) {
+            Name = name;
+            Proc = proc;
         }
+
+        public BigInteger Invoke(BigInteger x, BigInteger y) => Proc(x, y);
     }
 }

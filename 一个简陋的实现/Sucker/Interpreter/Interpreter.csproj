@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cons.cs" />
+    <Compile Include="JymlEnviroment.cs" />
     <Compile Include="JymlType.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
