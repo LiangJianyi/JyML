@@ -5,11 +5,28 @@ using System.Numerics;
 using JymlEnvironment;
 
 namespace JymlTypeSystem {
+    interface IPrimitiveProcedure {
+        BigInteger Add(BigInteger x, BigInteger y);
+        BigInteger Add(BigInteger x, BigInteger y);
+        BigInteger Add(BigInteger x, BigInteger y);
+        BigInteger Add(BigInteger x, BigInteger y);
+    }
     public abstract class JymlType {
         public static readonly Dictionary<string, PrimitiveProcedure> _primitiveProcedures =
             new Dictionary<string, PrimitiveProcedure>(){
                 { "Add", new PrimitiveProcedure("Add",(BigInteger x, BigInteger y) => x + y) },
-                { "Sub", new PrimitiveProcedure("Sub",(BigInteger x, BigInteger y) => x - y) }
+                { "Add", new PrimitiveProcedure("Add",(BigInteger x, DateTime y) => x + y) },
+                { "Add", new PrimitiveProcedure("Add",(DateTime x, BigInteger y) => x + y) },
+                { "Add", new PrimitiveProcedure("Add",(DateTime x, DateTime y) => x + y) },
+                { "Sub", new PrimitiveProcedure("Sub",(BigInteger x, BigInteger y) => x - y) },
+                { "Sub", new PrimitiveProcedure("Sub",(BigInteger x, DateTime y) => x - y) },
+                { "Sub", new PrimitiveProcedure("Sub",(DateTime x, BigInteger y) => x - y) },
+                { "Sub", new PrimitiveProcedure("Sub",(DateTime x, DateTime y) => x - y) },
+                { "Multi", new PrimitiveProcedure("Multi",(BigInteger x, BigInteger y) => x * y) },
+                { "Div", new PrimitiveProcedure("Div",(BigInteger x, BigInteger y) => x / y) },
+                { "Rem", new PrimitiveProcedure("Rem",(BigInteger x, BigInteger y) => x % y) },
+                { "Cons", new PrimitiveProcedure("Cons",(JymlType x) => new JymlAST.Cons(x)) },
+                { "Cons", new PrimitiveProcedure("Cons",(JymlType x, JymlType y) => new JymlAST.Cons(x,y)) },
             };
 
         public static JymlType CreateType(string str) {
@@ -115,12 +132,76 @@ namespace JymlTypeSystem {
     public class PrimitiveProcedure : JymlType {
         public string Name { get; private set; }
         public Func<BigInteger, BigInteger, BigInteger> Proc { get; private set; }
+        public object Result { get; private set; }
 
         public PrimitiveProcedure(string name, Func<BigInteger, BigInteger, BigInteger> proc) {
             Name = name;
             Proc = proc;
         }
 
-        public BigInteger Invoke(BigInteger x, BigInteger y) => Proc(x, y);
+        public PrimitiveProcedure(string exp) {
+            // Generate method by exp
+            if (true) {
+                ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) arguments = ParseArguments(exp);
+                string code = $"static {arguments.ReturnTypeToken} F({ParseArgumentTypeToken(arguments.ArgumentTokens)}) " +
+                              $"{{" +
+                              $"}}" +
+                              $"f({ParseArgumentContentToken(arguments.ArgumentTokens)})";
+
+            }
+            else if (true) {
+
+            }
+            else if (true) {
+
+            }
+        }
+
+        private ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) ParseArguments(string exp) {
+            /*
+             * exp BNF specifition
+             * "<ReturnType>::<ProcName>(<ParametersList>)"
+                ParametersList::="[<JymlType>::<Value>] | {<JymlType>::<Value>[,<JymlType>::<Value>]}"
+                ReturnType::="void|<JymlType>"
+             */
+            ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) res;
+            const char COLON = ':';
+            exp = exp.Trim();
+            int firstColonIndex = exp.IndexOf(COLON);
+            if (firstColonIndex > 1 && exp[firstColonIndex + 1] == COLON) {
+                res.ReturnTypeToken = exp.Substring(0, firstColonIndex + 1);
+                try {
+                    exp = exp.Substring(exp.IndexOf('(')); // 截取 (<ParametersList>)
+                }
+                catch (ArgumentOutOfRangeException ex) {
+                    throw new Exception("参数列表缺失圆括号：‘(’", ex);
+                }
+                try {
+                    exp = exp.Substring(1, exp.IndexOf(')') - 1);   // 删除')'
+                }
+                catch (ArgumentOutOfRangeException ex) {
+                    throw new Exception("参数列表缺失圆括号：‘)’", ex);
+                }
+                try {
+                    exp = exp.Substring(exp.IndexOf('(') + 1);   // 删除'('
+                }
+                catch (ArgumentOutOfRangeException ex) {
+                    throw new Exception("参数列表缺失圆括号：‘(’", ex);
+                }
+            }
+            else {
+                throw new Exception("表达式缺失返回值。");
+            }
+        }
+
+        private string ParseArgumentContentToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
+            throw new NotImplementedException();
+        }
+
+        private string ParseArgumentTypeToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
+            throw new NotImplementedException();
+        }
+
+        public object Invoke() => Result;
     }
 }

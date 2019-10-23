@@ -40,8 +40,8 @@ namespace JymlEnvironment {
 
         public void SetVariableValue(string var, JymlType val) => FrameNode[var].Value = val;
 
-        public void DefineVariable(string var,JymlType val) {
-            if (FrameNode[var]!=null) {
+        public void DefineVariable(string var, JymlType val) {
+            if (FrameNode[var] != null) {
                 throw new Exception($"变量 {var} 重定义。");
             }
             else {

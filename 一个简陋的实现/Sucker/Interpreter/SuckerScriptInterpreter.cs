@@ -29,14 +29,60 @@ namespace Interpreter {
                 return MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);
             }
             else if (Parser.IsBegin(exp)) {
-                return EvalSequence(BeginActions(exp));
+                return EvalSequence(exp.cdr as Cons, env);
             }
             else {
                 return Apply(
-                    Eval(exp.car as Cons, env),
+                    Eval(exp.car as Cons, env).car as string,
                     ListOfValues(exp.cdr as Cons, env)
                 );
             }
         }
+
+        /*
+         * ;; eval-sequence 用在 apply 里，用于求值过程体里的表达式序列。它也用在 eval 里，用于
+           ;; 求值 begin 表达式里的表达式序列。这个过程以一个表达式序列和一个环境为参数，按照序列里
+           ;; 的表达式出现的顺序对它们求值。它返回最后一个表达式的值。
+           (define (eval-sequence exps env)
+               (cond   [(last-exp? exps) (eval (first-exp exps) env)]
+                       [else   (eval (first-exp exps) env)
+                               (eval-sequence (rest-exps exps) env)]))
+         */
+        private static Cons EvalSequence(Cons cons, JymlEnviroment env) {
+            if (cons.cdr == null) {
+                return Eval(cons.car as Cons, env);
+            }
+            else {
+                return EvalSequence(cons.cdr as Cons, env);
+            }
+        }
+
+        private static Cons Apply(string procedureName, Cons arguments) {
+            if (JymlType._primitiveProcedures.Keys.Contains(procedureName)) {
+                // (apply-primitive-procedure procedure arguments)
+
+            }
+            else {
+                /*
+                 * (eval-sequence (procedure-body procedure) (extend-enviroment
+                                                        (procedure-parameters procedure)
+                                                        arguments
+                                                        (procedure-enviroment procedure)))
+                 */
+            }
+        }
+
+        /*
+         * eval 在处理过程应用时用 list-of-values 去生成实际参数表，以便完成这一过程应用。
+           list-of-values 以组合式的运算对象作为参数，求值各个运算对象，返回这些值的表
+
+           (define (list-of-values exps env)
+               (if [no-operands? exps]
+                   null
+                   (mcons  (eval (car exps) env)
+                           (list-of-values (cdr exps) env))))
+         */
+        private static Cons ListOfValues(Cons exp, JymlEnviroment env) =>
+            new Cons(Eval(exp.car as Cons, env), ListOfValues(exp.cdr as Cons, env));
     }
 }
