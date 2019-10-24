@@ -3,32 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using JymlEnvironment;
+using Janyee.Utilty;
 
 namespace JymlTypeSystem {
-    interface IPrimitiveProcedure {
-        BigInteger Add(BigInteger x, BigInteger y);
-        BigInteger Add(BigInteger x, BigInteger y);
-        BigInteger Add(BigInteger x, BigInteger y);
-        BigInteger Add(BigInteger x, BigInteger y);
-    }
     public abstract class JymlType {
-        public static readonly Dictionary<string, PrimitiveProcedure> _primitiveProcedures =
-            new Dictionary<string, PrimitiveProcedure>(){
-                { "Add", new PrimitiveProcedure("Add",(BigInteger x, BigInteger y) => x + y) },
-                { "Add", new PrimitiveProcedure("Add",(BigInteger x, DateTime y) => x + y) },
-                { "Add", new PrimitiveProcedure("Add",(DateTime x, BigInteger y) => x + y) },
-                { "Add", new PrimitiveProcedure("Add",(DateTime x, DateTime y) => x + y) },
-                { "Sub", new PrimitiveProcedure("Sub",(BigInteger x, BigInteger y) => x - y) },
-                { "Sub", new PrimitiveProcedure("Sub",(BigInteger x, DateTime y) => x - y) },
-                { "Sub", new PrimitiveProcedure("Sub",(DateTime x, BigInteger y) => x - y) },
-                { "Sub", new PrimitiveProcedure("Sub",(DateTime x, DateTime y) => x - y) },
-                { "Multi", new PrimitiveProcedure("Multi",(BigInteger x, BigInteger y) => x * y) },
-                { "Div", new PrimitiveProcedure("Div",(BigInteger x, BigInteger y) => x / y) },
-                { "Rem", new PrimitiveProcedure("Rem",(BigInteger x, BigInteger y) => x % y) },
-                { "Cons", new PrimitiveProcedure("Cons",(JymlType x) => new JymlAST.Cons(x)) },
-                { "Cons", new PrimitiveProcedure("Cons",(JymlType x, JymlType y) => new JymlAST.Cons(x,y)) },
-            };
-
         public static JymlType CreateType(string str) {
             throw new NotImplementedException();
         }
@@ -105,13 +83,18 @@ namespace JymlTypeSystem {
             }
         }
 
+        public DateTime(System.DateTime dateTime) => Date = dateTime;
+
+        public static DateTime operator +(BigInteger bi, DateTime dt) => new DateTime(dt.Date.AddDays(bi.BigIntegerToInt64()));
+        public static DateTime operator +(DateTime dt, BigInteger bi) => new DateTime(dt.Date.AddDays(bi.BigIntegerToInt64()));
+
         public override string ToString() {
             return $"{Date.Month}/{Date.Day}/{Date.Year}";
         }
     }
 
     /// <summary>
-    /// 代表解释器的过程
+    /// 表示解释器的复合过程
     /// </summary>
     public class Procedures : JymlType {
         private readonly string _name;
@@ -129,95 +112,118 @@ namespace JymlTypeSystem {
         }
     }
 
+    /// <summary>
+    /// 表示解释器的基本过程
+    /// </summary>
     public class PrimitiveProcedure : JymlType {
-        public string Name { get; private set; }
-        public Func<BigInteger, BigInteger, BigInteger> Proc { get; private set; }
-        public object Result { get; private set; }
-
-        public PrimitiveProcedure(string name, Func<BigInteger, BigInteger, BigInteger> proc) {
-            Name = name;
-            Proc = proc;
+        /// <summary>
+        /// 表示基本过程的名称
+        /// </summary>
+        public enum Primitive {
+            Add,
+            Sub,
+            Multi,
+            Div,
+            Rem,
+            Cons
         }
 
-        public PrimitiveProcedure(string exp) {
-            // Generate method by exp
-            if (true) {
-                ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) arguments = ParseArguments(exp);
-                string code = $"static {arguments.ReturnTypeToken} F({ParseArgumentTypeToken(arguments.ArgumentTokens)}) " +
-                              $"{{" +
-                              $"}}" +
-                              $"f({ParseArgumentContentToken(arguments.ArgumentTokens)})";
+        private Primitive _primitive;
 
-            }
-            else if (true) {
+        public static Dictionary<string, PrimitiveProcedure> PrimitiveProcedures = new Dictionary<string, PrimitiveProcedure>() {
+            {Primitive.Add.ToString(),new PrimitiveProcedure(Primitive.Add) }
+        };
 
-            }
-            else if (true) {
-
-            }
+        public PrimitiveProcedure(Primitive primitive) {
+            _primitive = primitive;
         }
 
-        private static ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) ParseArguments(string exp) {
-            /*
-             * exp BNF specifition
-             * "<ReturnType>::<ProcName>(<ParametersList>)"
-                ParametersList::="[<JymlType>::<Value>] | {<JymlType>::<Value>[,<JymlType>::<Value>]}"
-                ReturnType::="void|<JymlType>"
-             */
-            ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) res;
-            const char COLON = ':';
-            const char OPEN_PARENTHESIS = '(';
-            const char CLOSE_PARENTHESIS = ')';
-            const char COMMA = ',';
-            exp = exp.Trim();  // 应该改为去除所有空格
-            int firstColonIndex = exp.IndexOf(COLON);
-            if (firstColonIndex > 1 && exp[firstColonIndex + 1] == COLON) {
-                res.ReturnTypeToken = exp.Substring(0, firstColonIndex + 1);
-                if (exp.IndexOf(OPEN_PARENTHESIS) > -1) {
-                    exp = exp.Substring(exp.IndexOf(OPEN_PARENTHESIS) + 1); // 截取 (<ParametersList>)
-                    if (exp.IndexOf(CLOSE_PARENTHESIS) > -1) {
-                        exp = exp.Substring(0, exp.IndexOf(CLOSE_PARENTHESIS) - 1);   // 删除')'
-                        string[][] typeValuePair = exp.Split(COMMA)
-                                                      .Select(s => s.Split(COLON)
-                                                                    .Where(v => v != string.Empty)
-                                                                    .ToArray()
-                                                             ).ToArray();
-                        res.ArgumentTokens = new (string ArgumentTypeToke, string ArgumentContentToken)[typeValuePair.Length];
-                        for (int i = 0; i < typeValuePair.Length; i++) {
-                            res.ArgumentTokens[i] = (typeValuePair[i][0], typeValuePair[i][1]);
+        public object Invoke(params object[] arguments) {
+            switch (_primitive) {
+                case Primitive.Add:
+                    if (arguments[0] is BigInteger bigInteger1) {
+                        if (arguments[1] is BigInteger bigInteger2) {
+                            return bigInteger1 + bigInteger2;
                         }
-                        return res;
+                        else if (arguments[1] is DateTime dateTime) {
+                            return bigInteger1 + dateTime;
+                        }
+                        else {
+                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                        }
+                    }
+                    else if (arguments[0] is DateTime dateTime) {
+                        if (arguments[1] is BigInteger bigInteger) {
+                            return dateTime + bigInteger;
+                        }
+                        else {
+                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                        }
                     }
                     else {
-                        throw new Exception("参数列表缺失圆括号：‘)’");
+                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
-                }
-                else {
-                    throw new Exception("参数列表缺失圆括号：‘(’");
-                }
-            }
-            else {
-                throw new Exception("表达式缺失返回值。");
+                case Primitive.Sub:
+                    if (arguments[0] is BigInteger bigInteger3) {
+                        if (arguments[1] is BigInteger bigInteger4) {
+                            return bigInteger3 - bigInteger4;
+                        }
+                        else {
+                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                        }
+                    }
+                    else {
+                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                    }
+                case Primitive.Multi:
+                    if (arguments[0] is BigInteger bigInteger5) {
+                        if (arguments[1] is BigInteger bigInteger6) {
+                            return bigInteger5 * bigInteger6;
+                        }
+                        else {
+                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                        }
+                    }
+                    else {
+                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                    }
+                case Primitive.Div:
+                    if (arguments[0] is BigInteger bigInteger7) {
+                        if (arguments[1] is BigInteger bigInteger8) {
+                            return bigInteger7 - bigInteger8;
+                        }
+                        else {
+                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                        }
+                    }
+                    else {
+                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                    }
+                case Primitive.Rem:
+                    if (arguments[0] is BigInteger bigInteger9) {
+                        if (arguments[1] is BigInteger bigInteger10) {
+                            return bigInteger9 - bigInteger10;
+                        }
+                        else {
+                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                        }
+                    }
+                    else {
+                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                    }
+                case Primitive.Cons:
+                    if (arguments.Length == 1) {
+                        return new JymlAST.Cons(arguments[0]);
+                    }
+                    else if (arguments.Length > 1) {
+                        return new JymlAST.Cons(arguments[0], arguments[1]);
+                    }
+                    else {
+                        throw new Exception($"参数列表与 Cons 不匹配。");
+                    }
+                default:
+                    throw new Exception($"未知过程类型：Primitive.{_primitive}");
             }
         }
-
-        private static string ParseArgumentContentToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
-            string args = "";
-            foreach (var item in argumentTokens) {
-                args += $"{item.ArgumentContentToken},";
-            }
-            return args.Remove(args.Length - 1);
-        }
-
-        private static string ParseArgumentTypeToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
-            string @params = "";
-            int paramIndex = 0;
-            foreach (var item in argumentTokens) {
-                @params += $"{item.ArgumentTypeToke}_{paramIndex++},";
-            }
-            return @params.Remove(@params.Length - 1);
-        }
-
-        public object Invoke() => Result;
     }
 }
