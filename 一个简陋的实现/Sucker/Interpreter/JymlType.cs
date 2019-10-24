@@ -157,7 +157,7 @@ namespace JymlTypeSystem {
             }
         }
 
-        private ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) ParseArguments(string exp) {
+        private static ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) ParseArguments(string exp) {
             /*
              * exp BNF specifition
              * "<ReturnType>::<ProcName>(<ParametersList>)"
@@ -166,27 +166,34 @@ namespace JymlTypeSystem {
              */
             ((string ArgumentTypeToke, string ArgumentContentToken)[] ArgumentTokens, string ReturnTypeToken) res;
             const char COLON = ':';
-            exp = exp.Trim();
+            const char OPEN_PARENTHESIS = '(';
+            const char CLOSE_PARENTHESIS = ')';
+            const char COMMA = ',';
+            exp = exp.Trim();  // 应该改为去除所有空格
             int firstColonIndex = exp.IndexOf(COLON);
             if (firstColonIndex > 1 && exp[firstColonIndex + 1] == COLON) {
                 res.ReturnTypeToken = exp.Substring(0, firstColonIndex + 1);
-                try {
-                    exp = exp.Substring(exp.IndexOf('(')); // 截取 (<ParametersList>)
+                if (exp.IndexOf(OPEN_PARENTHESIS) > -1) {
+                    exp = exp.Substring(exp.IndexOf(OPEN_PARENTHESIS) + 1); // 截取 (<ParametersList>)
+                    if (exp.IndexOf(CLOSE_PARENTHESIS) > -1) {
+                        exp = exp.Substring(0, exp.IndexOf(CLOSE_PARENTHESIS) - 1);   // 删除')'
+                        string[][] typeValuePair = exp.Split(COMMA)
+                                                      .Select(s => s.Split(COLON)
+                                                                    .Where(v => v != string.Empty)
+                                                                    .ToArray()
+                                                             ).ToArray();
+                        res.ArgumentTokens = new (string ArgumentTypeToke, string ArgumentContentToken)[typeValuePair.Length];
+                        for (int i = 0; i < typeValuePair.Length; i++) {
+                            res.ArgumentTokens[i] = (typeValuePair[i][0], typeValuePair[i][1]);
+                        }
+                        return res;
+                    }
+                    else {
+                        throw new Exception("参数列表缺失圆括号：‘)’");
+                    }
                 }
-                catch (ArgumentOutOfRangeException ex) {
-                    throw new Exception("参数列表缺失圆括号：‘(’", ex);
-                }
-                try {
-                    exp = exp.Substring(1, exp.IndexOf(')') - 1);   // 删除')'
-                }
-                catch (ArgumentOutOfRangeException ex) {
-                    throw new Exception("参数列表缺失圆括号：‘)’", ex);
-                }
-                try {
-                    exp = exp.Substring(exp.IndexOf('(') + 1);   // 删除'('
-                }
-                catch (ArgumentOutOfRangeException ex) {
-                    throw new Exception("参数列表缺失圆括号：‘(’", ex);
+                else {
+                    throw new Exception("参数列表缺失圆括号：‘(’");
                 }
             }
             else {
@@ -194,12 +201,21 @@ namespace JymlTypeSystem {
             }
         }
 
-        private string ParseArgumentContentToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
-            throw new NotImplementedException();
+        private static string ParseArgumentContentToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
+            string args = "";
+            foreach (var item in argumentTokens) {
+                args += $"{item.ArgumentContentToken},";
+            }
+            return args.Remove(args.Length - 1);
         }
 
-        private string ParseArgumentTypeToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
-            throw new NotImplementedException();
+        private static string ParseArgumentTypeToken((string ArgumentTypeToke, string ArgumentContentToken)[] argumentTokens) {
+            string @params = "";
+            int paramIndex = 0;
+            foreach (var item in argumentTokens) {
+                @params += $"{item.ArgumentTypeToke}_{paramIndex++},";
+            }
+            return @params.Remove(@params.Length - 1);
         }
 
         public object Invoke() => Result;
