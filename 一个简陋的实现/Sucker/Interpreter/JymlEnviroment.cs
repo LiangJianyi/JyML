@@ -5,8 +5,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace JymlEnvironment {
-    public class JymlEnviroment {
-        public JymlEnviroment Enviroment { get; set; }
+    public class JymlEnvironment {
+        public JymlEnvironment Enviroment { get; set; }
 
         public class Restraint {
             public string Variable { get; set; }
@@ -25,7 +25,7 @@ namespace JymlEnvironment {
 
         public Frame FrameNode { get; private set; }
 
-        public Cons ExtendEnvironment(string[] variables, JymlType[] values, JymlEnviroment baseEnv) {
+        public Cons ExtendEnvironment(string[] variables, JymlType[] values, JymlEnvironment baseEnv) {
             if (variables.Length == values.Length) {
                 LinkedList<Restraint> restraints = new LinkedList<Restraint>();
                 for (int i = 0; i < variables.Length; i++) {
@@ -50,7 +50,7 @@ namespace JymlEnvironment {
         }
 
         public static Cons SetUpEnvironment() {
-            JymlEnviroment initialEnv = new JymlEnviroment();
+            JymlEnvironment initialEnv = new JymlEnvironment();
             return initialEnv.ExtendEnvironment(
                 JymlType._primitiveProcedures.Keys.ToArray(),
                 JymlType._primitiveProcedures.Values.ToArray(),

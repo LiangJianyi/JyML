@@ -98,13 +98,30 @@ namespace JymlTypeSystem {
     /// </summary>
     public class Procedures : JymlType {
         private readonly string _name;
-        private readonly JymlEnviroment[] _arguments;
+        private readonly JymlEnvironment.JymlEnvironment _environment;
         private readonly JymlAST.Cons _body;
+        private readonly JymlAST.Cons _parameters;
+        private readonly JymlAST.Cons _arguments;
 
         private string GenerateName() {
             Random random = new Random();
             const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public Procedures(JymlAST.Cons arguments,JymlAST.Cons parameters, JymlAST.Cons body, JymlEnvironment.JymlEnvironment environment) {
+            _arguments = arguments;
+            _parameters = parameters;
+            _body = body;
+            _environment = environment;
+        }
+
+        public Procedures(string name, JymlAST.Cons arguments, JymlAST.Cons parameters, JymlAST.Cons body, JymlEnvironment.JymlEnvironment environment) {
+            _name = name;
+            _arguments = arguments;
+            _parameters = parameters;
+            _body = body;
+            _environment = environment;
         }
 
         public override string ToString() {
@@ -131,7 +148,12 @@ namespace JymlTypeSystem {
         private Primitive _primitive;
 
         public static Dictionary<string, PrimitiveProcedure> PrimitiveProcedures = new Dictionary<string, PrimitiveProcedure>() {
-            {Primitive.Add.ToString(),new PrimitiveProcedure(Primitive.Add) }
+            { Primitive.Add.ToString(), new PrimitiveProcedure(Primitive.Add) },
+            { Primitive.Sub.ToString(), new PrimitiveProcedure(Primitive.Sub) },
+            { Primitive.Multi.ToString(), new PrimitiveProcedure(Primitive.Multi) },
+            { Primitive.Div.ToString(), new PrimitiveProcedure(Primitive.Div) },
+            { Primitive.Rem.ToString(), new PrimitiveProcedure(Primitive.Rem) },
+            { Primitive.Cons.ToString(), new PrimitiveProcedure(Primitive.Cons) },
         };
 
         public PrimitiveProcedure(Primitive primitive) {

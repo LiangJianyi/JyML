@@ -9,7 +9,7 @@ using JymlTypeSystem;
 
 namespace Interpreter {
     static class SuckerScriptInterpreter {
-        public static Cons Eval(Cons exp, JymlEnviroment env) {
+        public static Cons Eval(Cons exp, JymlEnvironment.JymlEnvironment env) {
             if (Parser.IsSelfEvaluating(exp)) {
                 return exp;
             }
@@ -48,7 +48,7 @@ namespace Interpreter {
                        [else   (eval (first-exp exps) env)
                                (eval-sequence (rest-exps exps) env)]))
          */
-        private static Cons EvalSequence(Cons cons, JymlEnviroment env) {
+        private static Cons EvalSequence(Cons cons, JymlEnvironment.JymlEnvironment env) {
             if (cons.cdr == null) {
                 return Eval(cons.car as Cons, env);
             }
@@ -57,10 +57,21 @@ namespace Interpreter {
             }
         }
 
+        /*
+         * (define (apply procedure arguments)
+                (cond   [(primitive-procedure? procedure)
+                        (apply-primitive-procedure procedure arguments)]
+                        [(compound-procedure? procedure)
+                        (eval-sequence (procedure-body procedure) (extend-enviroment
+                                                                    (procedure-parameters procedure)
+                                                                    arguments
+                                                                    (procedure-enviroment procedure)))]
+                        [else (error "Unknown procedure type -- Apply" procedure)]))
+         */
         private static Cons Apply(string procedureName, Cons arguments) {
-            if (JymlType._primitiveProcedures.Keys.Contains(procedureName)) {
+            if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(procedureName)) {
                 // (apply-primitive-procedure procedure arguments)
-
+                return new Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ToArray()));
             }
             else {
                 /*
@@ -69,6 +80,10 @@ namespace Interpreter {
                                                         arguments
                                                         (procedure-enviroment procedure)))
                  */
+                return EvalSequence(
+                    cons:
+                    env:
+                 );
             }
         }
 
@@ -82,7 +97,7 @@ namespace Interpreter {
                    (mcons  (eval (car exps) env)
                            (list-of-values (cdr exps) env))))
          */
-        private static Cons ListOfValues(Cons exp, JymlEnviroment env) =>
+        private static Cons ListOfValues(Cons exp, JymlEnvironment.JymlEnvironment env) =>
             new Cons(Eval(exp.car as Cons, env), ListOfValues(exp.cdr as Cons, env));
     }
 }
