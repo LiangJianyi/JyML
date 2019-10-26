@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using JymlEnvironment;
 using Janyee.Utilty;
+using JymlAST;
 
 namespace JymlTypeSystem {
     public abstract class JymlType {
@@ -28,7 +29,7 @@ namespace JymlTypeSystem {
                     _bool = false;
                     break;
                 default:
-                    throw new ArithmeticException("无效的 token。");
+                    throw new Exception("无效的 token。");
             }
         }
 
@@ -79,7 +80,7 @@ namespace JymlTypeSystem {
                 Date = new System.DateTime(yearValue, monthValue, dayValue);
             }
             else {
-                throw new ArgumentOutOfRangeException($"Date time format error: {tokens}");
+                throw new Exception($"Date time format error: {tokens}");
             }
         }
 
@@ -99,9 +100,19 @@ namespace JymlTypeSystem {
     public class Procedures : JymlType {
         private readonly string _name;
         private readonly JymlEnvironment.JymlEnvironment _environment;
-        private readonly JymlAST.Cons _body;
-        private readonly JymlAST.Cons _parameters;
-        private readonly JymlAST.Cons _arguments;
+        private readonly Cons _body;
+        private readonly Cons _parameters;
+        private readonly Cons _arguments;
+
+        public string Name => _name;
+
+        public JymlEnvironment.JymlEnvironment Environment => _environment;
+
+        public Cons Body => _body;
+
+        public Cons Parameters => _parameters;
+
+        public Cons Arguments => _arguments;
 
         private string GenerateName() {
             Random random = new Random();
@@ -109,14 +120,15 @@ namespace JymlTypeSystem {
             return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public Procedures(JymlAST.Cons arguments,JymlAST.Cons parameters, JymlAST.Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(Cons arguments,Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
+            _name = GenerateName();
             _arguments = arguments;
             _parameters = parameters;
             _body = body;
             _environment = environment;
         }
 
-        public Procedures(string name, JymlAST.Cons arguments, JymlAST.Cons parameters, JymlAST.Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(string name, Cons arguments, Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
             _name = name;
             _arguments = arguments;
             _parameters = parameters;
@@ -125,7 +137,7 @@ namespace JymlTypeSystem {
         }
 
         public override string ToString() {
-            throw new NotImplementedException();
+            return $"#<{_name}>_<{_parameters}";
         }
     }
 
@@ -235,10 +247,10 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.Cons:
                     if (arguments.Length == 1) {
-                        return new JymlAST.Cons(arguments[0]);
+                        return new Cons(arguments[0]);
                     }
                     else if (arguments.Length > 1) {
-                        return new JymlAST.Cons(arguments[0], arguments[1]);
+                        return new Cons(arguments[0], arguments[1]);
                     }
                     else {
                         throw new Exception($"参数列表与 Cons 不匹配。");

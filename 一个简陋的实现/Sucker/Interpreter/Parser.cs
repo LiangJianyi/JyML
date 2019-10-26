@@ -97,9 +97,9 @@ namespace JymlParser {
             }
         }
 
-        public static object[] GetLambdaParameters(Cons ast) {
+        public static string[] GetLambdaParameters(Cons ast) {
             Cons parameters = (ast.cdr as Cons).car as Cons;
-            return parameters.ToArray();
+            return parameters.ToArray<string>();
         }
 
         public static bool IsAssignment(Cons ast) => GetTagOfList(ast, "set");

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using JymlAST;
 using JymlEnvironment;
 using JymlParser;
@@ -10,33 +9,71 @@ using JymlTypeSystem;
 namespace Interpreter {
     static class SuckerScriptInterpreter {
         public static Cons Eval(Cons exp, JymlEnvironment.JymlEnvironment env) {
-            if (Parser.IsSelfEvaluating(exp)) {
-                return exp;
+            if (exp != null) {
+                if (Parser.IsSelfEvaluating(exp)) {
+                    return exp;
+                }
+                else if (Parser.IsVariable(exp)) {
+                    return new Cons(env.FrameNode[exp.car as string].Value);
+                }
+                else if (Parser.IsAssignment(exp)) {
+                    return EvalAssignment(exp, env);
+                }
+                else if (Parser.IsDefinition(exp)) {
+                    return EvalDefinition(exp, env);
+                }
+                else if (Parser.IsIf(exp)) {
+                    return EvalIf(exp, env);
+                }
+                else if (Parser.IsLambda(exp)) {
+                    return MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);
+                }
+                else if (Parser.IsBegin(exp)) {
+                    return EvalSequence(exp.cdr as Cons, env);
+                }
+                else {
+                    return Apply(
+                        Eval(exp.car as Cons, env),
+                        ListOfValues(exp.cdr as Cons, env)
+                    );
+                }
             }
-            else if (Parser.IsVariable(exp)) {
-                return new Cons(env.FrameNode[exp.car as string].Variable);
-            }
-            else if (Parser.IsAssignment(exp)) {
-                return EvalAssignment(exp, env);
-            }
-            else if (Parser.IsDefinition(exp)) {
-                return EvalDefinition(exp, env);
-            }
-            else if (Parser.IsIf(exp)) {
-                return EvalIf(exp, env);
-            }
-            else if (Parser.IsLambda(exp)) {
-                return MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);
-            }
-            else if (Parser.IsBegin(exp)) {
-                return EvalSequence(exp.cdr as Cons, env);
-            }
-            else {
-                return Apply(
-                    Eval(exp.car as Cons, env).car as string,
-                    ListOfValues(exp.cdr as Cons, env)
-                );
-            }
+        }
+
+        // parameters 不应该使用 object[] ，它们只是一堆名字而已
+        private static Cons MakeLambda(object[] parameters, Cons body, JymlEnvironment.JymlEnvironment env) {
+            throw new NotImplementedException();
+        }
+
+        /*
+         * (define (eval-definition exp env)
+                (define-variable!   (definition-variable exp)
+                                    (eval (definition-value exp) env)
+                                    env))
+         */
+        private static Cons EvalDefinition(Cons exp, JymlEnvironment.JymlEnvironment env) {
+            /*
+             * (define (definition-variable exp) 
+                    (if [symbol? [mcar [mcdr exp]]]
+                        [mcar [mcdr exp]]
+                        [mcar [mcar [mcdr exp]]]))
+             */
+            Cons defineVariable(Cons c) =>
+                Parser.IsVariable(c.cdr as Cons) ? (c.cdr as Cons).car as Cons  // 普通变量或 lambda 变量
+                                                 : ((c.cdr as Cons).car as Cons).car as Cons;   // 过程定义
+
+            /*
+             * (define (definition-value exp) 
+                    (if [symbol? [mcar [mcdr exp]]]
+                        [mcar [mcdr [mcdr exp]]]
+                        (make-lambda    [mcdr [mcar [mcdr exp]]]    ; formal parameters
+                                        [mcdr [mcdr exp]])))        ; body
+             */
+            JymlType defineValue(Cons c) =>
+               Parser.IsVariable((c.cdr as Cons).car as Cons) ? ((c.cdr as Cons).cdr as Cons).car as Cons  // 普通变量或 lambda 变量
+                                                              : MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
+            env.DefineVariable(defineVariable(exp), defineValue(exp));
+            return null;
         }
 
         /*
@@ -68,22 +105,30 @@ namespace Interpreter {
                                                                     (procedure-enviroment procedure)))]
                         [else (error "Unknown procedure type -- Apply" procedure)]))
          */
-        private static Cons Apply(string procedureName, Cons arguments) {
-            if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(procedureName)) {
-                // (apply-primitive-procedure procedure arguments)
-                return new Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ToArray()));
+        private static Cons Apply(Cons proc, Cons arguments) {
+            if (proc.car is string procedureName) {
+                if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(procedureName)) {
+                    // (apply-primitive-procedure procedure arguments)
+                    return new Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ToArray()));
+                }
+                else {
+                    /*
+                     * (eval-sequence (procedure-body procedure) (extend-enviroment
+                                                            (procedure-parameters procedure)
+                                                            arguments
+                                                            (procedure-enviroment procedure)))
+                     */
+                    Procedures p = proc.car as Procedures;
+                    string[] variables = p.Parameters.ToArray<string>();
+                    JymlType[] values = p.Arguments.ToArray<JymlType>();
+                    return EvalSequence(
+                        cons: proc,
+                        env: p.Environment.ExtendEnvironment(p.Parameters, p.Arguments)
+                    );
+                }
             }
             else {
-                /*
-                 * (eval-sequence (procedure-body procedure) (extend-enviroment
-                                                        (procedure-parameters procedure)
-                                                        arguments
-                                                        (procedure-enviroment procedure)))
-                 */
-                return EvalSequence(
-                    cons:
-                    env:
-                 );
+                throw new Exception();
             }
         }
 
