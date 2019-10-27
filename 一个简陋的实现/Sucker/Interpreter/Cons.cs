@@ -68,6 +68,17 @@ namespace JymlAST {
 
         public static implicit operator Cons(string s) => new Cons(s);
 
+        public static implicit operator Cons(string[] s) {
+            Cons c = new Cons();
+            Cons temp = c;
+            foreach (var item in s) {
+                temp.car = s;
+                temp.cdr = new Cons();
+                temp = temp.cdr as Cons;
+            }
+            return c;
+        }
+
         // this only works with proper lists
         public IEnumerator<object> GetEnumerator() {
             Cons current = this;

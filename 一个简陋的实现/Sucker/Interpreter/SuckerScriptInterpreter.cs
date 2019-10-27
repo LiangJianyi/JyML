@@ -38,6 +38,47 @@ namespace Interpreter {
                     );
                 }
             }
+            else {
+                return null;
+            }
+        }
+
+        /*
+         * ;; eval-assignment 调用 eval 找出需要赋的值，将变量和得到的值传给过程 set-variable-value!，
+           ;; 将有关的值安置到指定环境里
+           (define (eval-assignment exp env)
+               (set-variable-value!    (assignment-variable exp)
+                                       (eval (assignment-value exp) env)
+                                       env)
+               'ok)
+         */
+        private static Cons EvalAssignment(Cons exp, JymlEnvironment.JymlEnvironment env) {
+            env.SetVariableValue(
+                var: (exp.cdr as Cons).car as string,
+                val: JymlType.CreateType(((exp.cdr as Cons).cdr as Cons).car as string)
+            );
+            return null;
+        }
+
+        /*
+         * ;; eval-if 在给定环境中求值 if 表达式的谓词部分，如果得到的结果为真，eval-if 就去求值这个 if 的
+           ;; consequent 部分，否则求值其 alternative 部分
+           (define (eval-if exp env)
+               (if [true? (eval (if-predicate exp) env)]
+                   (eval (if-consequent exp) env)
+                   (eval (if-alternative exp) env)))
+         */
+        private static Cons EvalIf(Cons exp, JymlEnvironment.JymlEnvironment env) {
+            Cons predicate = (exp.cdr as Cons).car as Cons;
+            Cons consequent = ((exp.cdr as Cons).cdr as Cons).car as Cons;
+            Cons alternative = ((exp.cdr as Cons).cdr as Cons).cdr as Cons == null ? null
+                                                                                   : (((exp.cdr as Cons).cdr as Cons).cdr as Cons).car as Cons;
+            if ((bool)Eval(predicate, env).car) {
+                return Eval(consequent, env);
+            }
+            else {
+                return Eval(alternative, env);
+            }
         }
 
         private static Cons MakeLambda(string[] parameters, Cons body, JymlEnvironment.JymlEnvironment env) {
@@ -119,10 +160,10 @@ namespace Interpreter {
                      */
                     Procedures p = proc.car as Procedures;
                     string[] variables = p.Parameters.ToArray<string>();
-                    JymlType[] values = p.Arguments.ToArray<JymlType>();
+                    JymlType[] values = arguments.ToArray<JymlType>();
                     return EvalSequence(
                         cons: proc,
-                        env: p.Environment.ExtendEnvironment(p.Parameters, p.Arguments)
+                        env: p.Environment.ExtendEnvironment(variables, values)
                     );
                 }
             }

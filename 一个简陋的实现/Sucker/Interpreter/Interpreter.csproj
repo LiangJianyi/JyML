@@ -69,6 +69,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AstTool.cs" />
     <Compile Include="Cons.cs" />
     <Compile Include="JymlEnviroment.cs" />
     <Compile Include="JymlType.cs" />

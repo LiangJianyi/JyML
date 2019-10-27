@@ -134,7 +134,6 @@ namespace JymlTypeSystem {
         private readonly JymlEnvironment.JymlEnvironment _environment;
         private readonly Cons _body;
         private readonly Cons _parameters;
-        private readonly Cons _arguments;
 
         public string Name => _name;
 
@@ -144,25 +143,21 @@ namespace JymlTypeSystem {
 
         public Cons Parameters => _parameters;
 
-        public Cons Arguments => _arguments;
-
         private string GenerateName() {
             Random random = new Random();
             const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public Procedures(Cons arguments, Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
             _name = GenerateName();
-            _arguments = arguments;
             _parameters = parameters;
             _body = body;
             _environment = environment;
         }
 
-        public Procedures(string name, Cons arguments, Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(string name, Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
             _name = name;
-            _arguments = arguments;
             _parameters = parameters;
             _body = body;
             _environment = environment;

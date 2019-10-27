@@ -25,13 +25,13 @@ namespace JymlEnvironment {
 
         public Frame FrameNode { get; private set; }
 
-        public Cons ExtendEnvironment(string[] variables, JymlType[] values) {
+        public JymlEnvironment ExtendEnvironment(string[] variables, JymlType[] values) {
             if (variables.Length == values.Length) {
                 LinkedList<Restraint> restraints = new LinkedList<Restraint>();
                 for (int i = 0; i < variables.Length; i++) {
                     restraints.AddFirst(new Restraint(variables[i], values[i]));
                 }
-                return new Cons(new Frame(restraints), this);
+                return new JymlEnvironment(new Frame(restraints), this);
             }
             else {
                 throw new Exception("变量名的数量与其值的数量不匹配。");
