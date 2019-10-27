@@ -6,8 +6,6 @@ using System.Collections.Generic;
 
 namespace JymlEnvironment {
     public class JymlEnvironment {
-        public JymlEnvironment Enviroment { get; set; }
-
         public class Restraint {
             public string Variable { get; set; }
             public JymlType Value { get; set; }
@@ -23,7 +21,14 @@ namespace JymlEnvironment {
             public Restraint this[string i] => (from r in Restraints where r.Variable == i select r).First();
         }
 
+        public JymlEnvironment Enviroment { get; set; }
+
         public Frame FrameNode { get; private set; }
+
+        public JymlEnvironment(Frame frame, JymlEnvironment baseEnv) {
+            FrameNode = frame;
+            Enviroment = baseEnv;
+        }
 
         public JymlEnvironment ExtendEnvironment(string[] variables, JymlType[] values) {
             if (variables.Length == values.Length) {
@@ -49,12 +54,17 @@ namespace JymlEnvironment {
             }
         }
 
-        public static Cons SetUpEnvironment() {
-            JymlEnvironment initialEnv = new JymlEnvironment();
+        /*
+         * (define (setup-enviroment)
+                (extend-enviroment (primitive-procedure-names) 
+                                   (primitive-procedure-objects) 
+                                   null))
+         */
+        public static JymlEnvironment SetUpEnvironment() {
+            JymlEnvironment initialEnv = new JymlEnvironment(null, null);
             return initialEnv.ExtendEnvironment(
-                JymlType._primitiveProcedures.Keys.ToArray(),
-                JymlType._primitiveProcedures.Values.ToArray(),
-                null
+                PrimitiveProcedure.PrimitiveProcedures.Keys.ToArray(),
+                PrimitiveProcedure.PrimitiveProcedures.Values.ToArray()
             );
         }
     }
