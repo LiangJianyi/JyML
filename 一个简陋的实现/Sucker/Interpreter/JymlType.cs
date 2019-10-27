@@ -9,11 +9,43 @@ using JymlAST;
 namespace JymlTypeSystem {
     public abstract class JymlType {
         public static JymlType CreateType(string str) {
-            throw new NotImplementedException();
+            try {
+                return new Null(str);
+            }
+            catch (Exception) {
+                try {
+                    return new Boolean(str);
+                }
+                catch (Exception) {
+                    try {
+                        return new Number(str);
+                    }
+                    catch (Exception) {
+                        try {
+                            return new String(str);
+                        }
+                        catch (Exception) {
+                            try {
+                                return new DateTime(str);
+                            }
+                            catch (Exception) {
+                                // 思考一下将 str 转换为 procedure
+                                throw;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
-    public class Null : JymlType { }
+    public class Null : JymlType {
+        public Null(string str) {
+            if (str!="null") {
+                throw new Exception($"无法解析 {str}, 空类型应该为：null.");
+            }
+        }
+    }
 
     public class Boolean : JymlType {
         private bool _bool;
@@ -120,7 +152,7 @@ namespace JymlTypeSystem {
             return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public Procedures(Cons arguments,Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(Cons arguments, Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
             _name = GenerateName();
             _arguments = arguments;
             _parameters = parameters;

@@ -40,9 +40,8 @@ namespace Interpreter {
             }
         }
 
-        // parameters 不应该使用 object[] ，它们只是一堆名字而已
-        private static Cons MakeLambda(object[] parameters, Cons body, JymlEnvironment.JymlEnvironment env) {
-            throw new NotImplementedException();
+        private static Cons MakeLambda(string[] parameters, Cons body, JymlEnvironment.JymlEnvironment env) {
+            return new Cons(new Procedures(parameters, body, env));
         }
 
         /*
@@ -58,9 +57,9 @@ namespace Interpreter {
                         [mcar [mcdr exp]]
                         [mcar [mcar [mcdr exp]]]))
              */
-            Cons defineVariable(Cons c) =>
-                Parser.IsVariable(c.cdr as Cons) ? (c.cdr as Cons).car as Cons  // 普通变量或 lambda 变量
-                                                 : ((c.cdr as Cons).car as Cons).car as Cons;   // 过程定义
+            string defineVariable(Cons c) =>
+                Parser.IsVariable(c.cdr as Cons) ? (c.cdr as Cons).car as string  // 普通变量或 lambda 变量
+                                                 : ((c.cdr as Cons).car as Cons).car as string;   // 过程定义
 
             /*
              * (define (definition-value exp) 

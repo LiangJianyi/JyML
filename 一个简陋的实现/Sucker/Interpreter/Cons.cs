@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace JymlAST {
@@ -55,6 +56,17 @@ namespace JymlAST {
                 return i;
             }
         }
+
+        public static implicit operator JymlTypeSystem.JymlType(Cons cons) {
+            if (cons.car is string str) {
+                return JymlTypeSystem.JymlType.CreateType(str);
+            }
+            else {
+                throw new InvalidCastException($"无法将 {cons} 转换为 JymlType 类型");
+            }
+        }
+
+        public static implicit operator Cons(string s) => new Cons(s);
 
         // this only works with proper lists
         public IEnumerator<object> GetEnumerator() {
