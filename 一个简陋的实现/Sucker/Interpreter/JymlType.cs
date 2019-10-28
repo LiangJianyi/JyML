@@ -88,16 +88,19 @@ namespace JymlTypeSystem {
 
         public String(string exp) {
             if (exp[0] == '"' && exp[exp.Length - 1] == '"') {
-                _string = exp.Substring(exp.Length - 1, 1).Substring(0, 1);
+                if (exp[0] == '"' && exp[1] == '"') {
+                    _string = exp;
+                }
+                else {
+                    _string = exp.Substring(1, exp.Length - 2);
+                }
             }
             else {
                 throw new Exception("字符串缺乏双引号");
             }
         }
 
-        public override string ToString() {
-            return _string;
-        }
+        public override string ToString() => $"\"{_string}\"";
     }
 
     public class DateTime : JymlType {
@@ -286,5 +289,7 @@ namespace JymlTypeSystem {
                     throw new Exception($"未知过程类型：Primitive.{_primitive}");
             }
         }
+
+        public override string ToString() => $"#<Procedure: {_primitive}>";
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using JymlTypeSystem;
 
 namespace JymlAST {
-    static class AstTool {
+    static class ConsTool {
         public static T[] ToArray<T>(this Cons cons) where T : class {
             T[] arr = new T[cons.Length];
             int i = 0;

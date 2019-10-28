@@ -4,6 +4,7 @@ using System.Linq;
 using Interpreter;
 using JymlAST;
 using JymlParser;
+using JymlTypeSystem;
 using Jyml.Environment;
 
 namespace ManualTest {
@@ -69,6 +70,10 @@ namespace ManualTest {
         private static void TestJymlEnvironment() {
             Console.WriteLine("TestJymlEnvironment");
             JymlEnvironment env = JymlEnvironment.SetUpEnvironment();
+            env = env.ExtendEnvironment(
+                variables: new string[] { "var1", "var2", "var3" },
+                values: new JymlType[] { JymlType.CreateType("83497526294"), JymlType.CreateType("false"), JymlType.CreateType("\"hello, world\"") }
+            );
             foreach (var e in env) {
                 Console.WriteLine(e.FrameNode);
             }

@@ -30,7 +30,7 @@ namespace Jyml.Environment {
             }
         }
 
-        public JymlEnvironment Enviroment { get; set; }
+        public JymlEnvironment Enviroment { get; private set; }
 
         public Frame FrameNode { get; private set; }
 
