@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JymlParser;
-using JymlAST;
 using Interpreter;
+using JymlAST;
+using JymlParser;
 
-namespace Repl {
+namespace ManualTest {
     class Program {
         static void Main(string[] args) {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML.mast";

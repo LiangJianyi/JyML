@@ -54,18 +54,15 @@ namespace JymlEnvironment {
             }
         }
 
-        /*
-         * (define (setup-enviroment)
-                (extend-enviroment (primitive-procedure-names) 
-                                   (primitive-procedure-objects) 
-                                   null))
-         */
         public static JymlEnvironment SetUpEnvironment() {
-            JymlEnvironment initialEnv = new JymlEnvironment(null, null);
-            return initialEnv.ExtendEnvironment(
-                PrimitiveProcedure.PrimitiveProcedures.Keys.ToArray(),
-                PrimitiveProcedure.PrimitiveProcedures.Values.ToArray()
-            );
+            LinkedList<Restraint> restraints = new LinkedList<Restraint>();
+            string[] primitiveProcedureNames = PrimitiveProcedure.PrimitiveProcedures.Keys.ToArray();
+            PrimitiveProcedure[] primitiveProcedureValues = PrimitiveProcedure.PrimitiveProcedures.Values.ToArray();
+            for (int i = 0; i < primitiveProcedureNames.Length; i++) {
+                restraints.AddFirst(new Restraint(primitiveProcedureNames[i], primitiveProcedureValues[i]));
+            }
+            JymlEnvironment initialEnv = new JymlEnvironment(new Frame(restraints), null);
+            return initialEnv;
         }
     }
 }
