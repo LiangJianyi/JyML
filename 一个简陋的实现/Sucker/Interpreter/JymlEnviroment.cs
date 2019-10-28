@@ -3,9 +3,10 @@ using JymlTypeSystem;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
-namespace JymlEnvironment {
-    public class JymlEnvironment {
+namespace Jyml.Environment {
+    public class JymlEnvironment : IEnumerable<JymlEnvironment> {
         public class Restraint {
             public string Variable { get; set; }
             public JymlType Value { get; set; }
@@ -13,12 +14,20 @@ namespace JymlEnvironment {
                 Variable = var;
                 Value = val;
             }
+            public override string ToString() => $"(Variable:{Variable}, Value:{Value})";
         }
         public class Frame {
             public LinkedList<Restraint> Restraints { get; private set; } = new LinkedList<Restraint>();
             public Frame(LinkedList<Restraint> restraints) => Restraints = restraints;
             public void AddBindingToFrame(string var, JymlType val) => this.Restraints.AddFirst(new Restraint(var, val));
             public Restraint this[string i] => (from r in Restraints where r.Variable == i select r).First();
+            public override string ToString() {
+                string s = "Frame: \n";
+                foreach (var item in Restraints) {
+                    s += $"\t{item}\n";
+                }
+                return s;
+            }
         }
 
         public JymlEnvironment Enviroment { get; set; }
@@ -63,6 +72,24 @@ namespace JymlEnvironment {
             }
             JymlEnvironment initialEnv = new JymlEnvironment(new Frame(restraints), null);
             return initialEnv;
+        }
+
+        IEnumerator<JymlEnvironment> IEnumerable<JymlEnvironment>.GetEnumerator() {
+            JymlEnvironment env = this;
+            while (env != null) {
+                yield return env;
+                env = env.Enviroment;
+            }
+            yield break;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            JymlEnvironment env = this;
+            while (env != null) {
+                yield return env;
+                env = env.Enviroment;
+            }
+            yield break;
         }
     }
 }

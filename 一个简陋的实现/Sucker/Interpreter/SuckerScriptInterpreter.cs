@@ -2,11 +2,12 @@
 using System.Linq;
 using JymlAST;
 using JymlParser;
+using Jyml.Environment;
 using JymlTypeSystem;
 
 namespace Interpreter {
     static class SuckerScriptInterpreter {
-        public static Cons Eval(Cons exp, JymlEnvironment.JymlEnvironment env) {
+        public static Cons Eval(Cons exp, JymlEnvironment env) {
             if (exp != null) {
                 if (Parser.IsSelfEvaluating(exp)) {
                     return exp;
@@ -50,7 +51,7 @@ namespace Interpreter {
                                        env)
                'ok)
          */
-        private static Cons EvalAssignment(Cons exp, JymlEnvironment.JymlEnvironment env) {
+        private static Cons EvalAssignment(Cons exp, JymlEnvironment env) {
             env.SetVariableValue(
                 var: (exp.cdr as Cons).car as string,
                 val: JymlType.CreateType(((exp.cdr as Cons).cdr as Cons).car as string)
@@ -66,7 +67,7 @@ namespace Interpreter {
                    (eval (if-consequent exp) env)
                    (eval (if-alternative exp) env)))
          */
-        private static Cons EvalIf(Cons exp, JymlEnvironment.JymlEnvironment env) {
+        private static Cons EvalIf(Cons exp, JymlEnvironment env) {
             Cons predicate = (exp.cdr as Cons).car as Cons;
             Cons consequent = ((exp.cdr as Cons).cdr as Cons).car as Cons;
             Cons alternative = ((exp.cdr as Cons).cdr as Cons).cdr as Cons == null ? null
@@ -79,7 +80,7 @@ namespace Interpreter {
             }
         }
 
-        private static Cons MakeLambda(string[] parameters, Cons body, JymlEnvironment.JymlEnvironment env) {
+        private static Cons MakeLambda(string[] parameters, Cons body, JymlEnvironment env) {
             return new Cons(new Procedures(parameters, body, env));
         }
 
@@ -89,7 +90,7 @@ namespace Interpreter {
                                     (eval (definition-value exp) env)
                                     env))
          */
-        private static Cons EvalDefinition(Cons exp, JymlEnvironment.JymlEnvironment env) {
+        private static Cons EvalDefinition(Cons exp, JymlEnvironment env) {
             /*
              * (define (definition-variable exp) 
                     (if [symbol? [mcar [mcdr exp]]]
@@ -123,7 +124,7 @@ namespace Interpreter {
                        [else   (eval (first-exp exps) env)
                                (eval-sequence (rest-exps exps) env)]))
          */
-        private static Cons EvalSequence(Cons cons, JymlEnvironment.JymlEnvironment env) {
+        private static Cons EvalSequence(Cons cons, JymlEnvironment env) {
             if (cons.cdr == null) {
                 return Eval(cons.car as Cons, env);
             }
@@ -180,7 +181,7 @@ namespace Interpreter {
                    (mcons  (eval (car exps) env)
                            (list-of-values (cdr exps) env))))
          */
-        private static Cons ListOfValues(Cons exp, JymlEnvironment.JymlEnvironment env) =>
+        private static Cons ListOfValues(Cons exp, JymlEnvironment env) =>
             new Cons(Eval(exp.car as Cons, env), ListOfValues(exp.cdr as Cons, env));
     }
 }

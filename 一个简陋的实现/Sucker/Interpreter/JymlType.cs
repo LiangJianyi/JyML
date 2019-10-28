@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Janyee.Utilty;
 using JymlAST;
+using Jyml.Environment;
 
 namespace JymlTypeSystem {
     public abstract class JymlType {
@@ -130,13 +131,13 @@ namespace JymlTypeSystem {
     /// </summary>
     public class Procedures : JymlType {
         private readonly string _name;
-        private readonly JymlEnvironment.JymlEnvironment _environment;
+        private readonly JymlEnvironment _environment;
         private readonly Cons _body;
         private readonly Cons _parameters;
 
         public string Name => _name;
 
-        public JymlEnvironment.JymlEnvironment Environment => _environment;
+        public JymlEnvironment Environment => _environment;
 
         public Cons Body => _body;
 
@@ -148,14 +149,14 @@ namespace JymlTypeSystem {
             return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public Procedures(Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(Cons parameters, Cons body, JymlEnvironment environment) {
             _name = GenerateName();
             _parameters = parameters;
             _body = body;
             _environment = environment;
         }
 
-        public Procedures(string name, Cons parameters, Cons body, JymlEnvironment.JymlEnvironment environment) {
+        public Procedures(string name, Cons parameters, Cons body, JymlEnvironment environment) {
             _name = name;
             _parameters = parameters;
             _body = body;

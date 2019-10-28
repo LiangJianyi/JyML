@@ -4,6 +4,7 @@ using System.Linq;
 using Interpreter;
 using JymlAST;
 using JymlParser;
+using Jyml.Environment;
 
 namespace ManualTest {
     class Program {
@@ -12,7 +13,7 @@ namespace ManualTest {
             string text = System.IO.File.ReadAllText(path);
             Cons ast = Parser.GenerateAst(text);
             Test2(ast);
-
+            TestJymlEnvironment();
             Console.ReadKey();
         }
 
@@ -61,6 +62,15 @@ namespace ManualTest {
                         Console.WriteLine($"        Day:{day.Value.Day}, Total:{day.Value.Total}");
                     }
                 }
+            }
+            Console.WriteLine("\n\n");
+        }
+
+        private static void TestJymlEnvironment() {
+            Console.WriteLine("TestJymlEnvironment");
+            JymlEnvironment env = JymlEnvironment.SetUpEnvironment();
+            foreach (var e in env) {
+                Console.WriteLine(e.FrameNode);
             }
         }
     }
