@@ -6,7 +6,7 @@ using Jyml.Environment;
 using JymlTypeSystem;
 
 namespace Interpreter {
-    static class SuckerScriptInterpreter {
+    public static class SuckerScriptInterpreter {
         public static Cons Eval(Cons exp, JymlEnvironment env) {
             if (exp != null) {
                 if (Parser.IsSelfEvaluating(exp)) {

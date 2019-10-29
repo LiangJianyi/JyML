@@ -25,6 +25,11 @@ using System.Collections.Generic;
 	 */
 
 namespace JymlParser {
+    public enum Language {
+        SuckerML,
+        SuckerScript
+    }
+
     public static class Parser {
         private static readonly List<string> _beginMarks = new List<string>() { "(", "[" };
 
@@ -57,7 +62,7 @@ namespace JymlParser {
 
         public static Cons GetLambdaBody(Cons ast) => (ast.cdr as Cons).cdr as Cons;
 
-        public static Cons GenerateAst(string text) {
+        public static (Language lang, Cons ast) GenerateAst(string text) {
             Tokenizer tokenizer = new Tokenizer(text, new char[] { ' ', '\n' }, new char[] { '(', ')', '[', ']' });
             tokenizer.CleanUpTokens();
             _tokens = Cons.FromArray(tokenizer.Tokens);
@@ -66,14 +71,14 @@ namespace JymlParser {
                 _tokens = (_tokens.cdr as Cons).cdr as Cons;
                 if (lang == "SuckerML") {
                     // 调用 SuckerML 解释器
-                    return GenerateAst();
+                    return (Language.SuckerML, GenerateAst());
                 }
                 else if (lang == "SuckerScript") {
                     // 调用 SuckerScript 解释器
-                    return GenerateAst();
+                    return (Language.SuckerScript, GenerateAst());
                 }
                 else {
-                    throw new FormatException($"语言指示符不存在：{lang}");
+                    throw new FormatException($"语言指示符不存在：#lang {lang}");
                 }
             }
             else {
