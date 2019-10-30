@@ -12,23 +12,23 @@ namespace JymlTypeSystem {
             try {
                 return new Null(str);
             }
-            catch (Exception) {
+            catch (InvalidCastException) {
                 try {
                     return new Boolean(str);
                 }
-                catch (Exception) {
+                catch (InvalidCastException) {
                     try {
                         return new Number(str);
                     }
-                    catch (Exception) {
+                    catch (InvalidCastException) {
                         try {
                             return new String(str);
                         }
-                        catch (Exception) {
+                        catch (InvalidCastException) {
                             try {
                                 return new DateTime(str);
                             }
-                            catch (Exception) {
+                            catch (InvalidCastException) {
                                 // 思考一下将 str 转换为 procedure
                                 throw;
                             }
@@ -42,7 +42,7 @@ namespace JymlTypeSystem {
     public class Null : JymlType {
         public Null(string str) {
             if (str!="null") {
-                throw new Exception($"无法解析 {str}, 空类型应该为：null.");
+                throw new InvalidCastException($"无法解析 {str}, 空类型应该为：null.");
             }
         }
     }
@@ -61,7 +61,7 @@ namespace JymlTypeSystem {
                     _bool = false;
                     break;
                 default:
-                    throw new Exception("无效的 token。");
+                    throw new InvalidCastException("无效的 token。");
             }
         }
 
@@ -78,7 +78,14 @@ namespace JymlTypeSystem {
     public class Number : JymlType {
         private BigInteger _number;
 
-        public Number(string exp) => this._number = BigInteger.Parse(exp);
+        public Number(string exp) {
+            try {
+                this._number = BigInteger.Parse(exp);
+            }
+            catch (FormatException ex) {
+                throw new InvalidCastException($"{exp} 是无效的 Number。", ex);
+            }
+        }
 
         public override string ToString() => _number.ToString();
     }
@@ -96,7 +103,7 @@ namespace JymlTypeSystem {
                 }
             }
             else {
-                throw new Exception("字符串缺乏双引号");
+                throw new InvalidCastException("字符串缺乏双引号");
             }
         }
 
@@ -115,7 +122,7 @@ namespace JymlTypeSystem {
                 Date = new System.DateTime(yearValue, monthValue, dayValue);
             }
             else {
-                throw new Exception($"Date time format error: {tokens}");
+                throw new InvalidCastException($"Date time format error: {tokens}");
             }
         }
 
@@ -213,7 +220,7 @@ namespace JymlTypeSystem {
                             return bigInteger1 + dateTime;
                         }
                         else {
-                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
                         }
                     }
                     else if (arguments[0] is DateTime dateTime) {
@@ -221,11 +228,11 @@ namespace JymlTypeSystem {
                             return dateTime + bigInteger;
                         }
                         else {
-                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
                         }
                     }
                     else {
-                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.Sub:
                     if (arguments[0] is BigInteger bigInteger3) {
@@ -233,11 +240,11 @@ namespace JymlTypeSystem {
                             return bigInteger3 - bigInteger4;
                         }
                         else {
-                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
                         }
                     }
                     else {
-                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.Multi:
                     if (arguments[0] is BigInteger bigInteger5) {
@@ -245,11 +252,11 @@ namespace JymlTypeSystem {
                             return bigInteger5 * bigInteger6;
                         }
                         else {
-                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
                         }
                     }
                     else {
-                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.Div:
                     if (arguments[0] is BigInteger bigInteger7) {
@@ -257,11 +264,11 @@ namespace JymlTypeSystem {
                             return bigInteger7 - bigInteger8;
                         }
                         else {
-                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
                         }
                     }
                     else {
-                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.Rem:
                     if (arguments[0] is BigInteger bigInteger9) {
@@ -269,11 +276,11 @@ namespace JymlTypeSystem {
                             return bigInteger9 - bigInteger10;
                         }
                         else {
-                            throw new Exception($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
                         }
                     }
                     else {
-                        throw new Exception($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.Cons:
                     if (arguments.Length == 1) {
@@ -283,10 +290,10 @@ namespace JymlTypeSystem {
                         return new Cons(arguments[0], arguments[1]);
                     }
                     else {
-                        throw new Exception($"参数列表与 Cons 不匹配。");
+                        throw new InvalidCastException($"参数列表与 Cons 不匹配。");
                     }
                 default:
-                    throw new Exception($"未知过程类型：Primitive.{_primitive}");
+                    throw new InvalidCastException($"未知过程类型：Primitive.{_primitive}");
             }
         }
 

@@ -30,6 +30,9 @@ namespace Interpreter {
                 else if (Parser.IsBegin(exp)) {
                     return EvalSequence(exp.cdr as Cons, env);
                 }
+                else if (exp.car is Cons subexp) {
+                    return new Cons(Eval(subexp, env), Eval(exp.cdr as Cons, env));
+                }
                 else {
                     return Apply(
                         Eval(exp.car as Cons, env),

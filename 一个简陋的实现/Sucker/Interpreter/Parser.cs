@@ -30,10 +30,28 @@ namespace JymlParser {
         SuckerScript
     }
 
+    public enum Keyword {
+        Define,
+        Cons,
+        If,
+        Begin,
+        Lambda,
+        Set
+    }
+
     public static class Parser {
         private static readonly List<string> _beginMarks = new List<string>() { "(", "[" };
 
         private static readonly List<string> _endMarks = new List<string>() { ")", "]" };
+
+        private static readonly Dictionary<Keyword, string> _keywords = new Dictionary<Keyword, string>() {
+            { Keyword.Define, "define" },
+            { Keyword.Cons, "cons" },
+            { Keyword.If, "if" },
+            { Keyword.Begin, "begin" },
+            { Keyword.Lambda, "lambda" },
+            { Keyword.Set, "set" }
+        };
 
         private static Cons GenerateAst() {
             if (_tokens == null) {
@@ -58,7 +76,7 @@ namespace JymlParser {
 
         private static Cons _tokens;
 
-        public static bool IsLambda(Cons ast) => GetTagOfList(ast, "lambda");
+        public static bool IsLambda(Cons ast) => GetTagOfList(ast, _keywords[Keyword.Lambda]);
 
         public static Cons GetLambdaBody(Cons ast) => (ast.cdr as Cons).cdr as Cons;
 
@@ -86,11 +104,11 @@ namespace JymlParser {
             }
         }
 
-        public static bool IsBegin(Cons ast) => GetTagOfList(ast, "begin");
+        public static bool IsBegin(Cons ast) => GetTagOfList(ast, _keywords[Keyword.Begin]);
 
-        public static bool IsIf(Cons ast) => GetTagOfList(ast, "if");
+        public static bool IsIf(Cons ast) => GetTagOfList(ast, _keywords[Keyword.If]);
 
-        public static bool IsDefinition(Cons ast) => GetTagOfList(ast, "define");
+        public static bool IsDefinition(Cons ast) => GetTagOfList(ast, _keywords[Keyword.Define]);
 
         public static bool IsCompoundProcedure(Cons ast) {
             if (IsDefinition(ast)) {
@@ -107,7 +125,7 @@ namespace JymlParser {
             return parameters.ToArray<string>();
         }
 
-        public static bool IsAssignment(Cons ast) => GetTagOfList(ast, "set");
+        public static bool IsAssignment(Cons ast) => GetTagOfList(ast, _keywords[Keyword.Set]);
 
         public static bool GetTagOfList(Cons ast, string tag) {
             if (ast.car is string str) {
