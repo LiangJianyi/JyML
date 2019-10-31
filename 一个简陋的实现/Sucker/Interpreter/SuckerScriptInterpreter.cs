@@ -12,9 +12,6 @@ namespace Interpreter {
                 if (Parser.IsSelfEvaluating(exp)) {
                     return exp;
                 }
-                else if (Parser.IsVariable(exp)) {
-                    return new Cons(env.FrameNode[exp.car as string].Value);
-                }
                 else if (Parser.IsAssignment(exp)) {
                     return EvalAssignment(exp, env);
                 }
@@ -32,6 +29,9 @@ namespace Interpreter {
                 }
                 else if (exp.car is Cons subexp) {
                     return new Cons(Eval(subexp, env), Eval(exp.cdr as Cons, env));
+                }
+                else if (Parser.IsVariable(exp)) {
+                    return new Cons(env.FrameNode[exp.car as string].Value);
                 }
                 else {
                     return Apply(
@@ -112,8 +112,8 @@ namespace Interpreter {
                                         [mcdr [mcdr exp]])))        ; body
              */
             JymlType defineValue(Cons c) =>
-               Parser.IsVariable((c.cdr as Cons).car as Cons) ? ((c.cdr as Cons).cdr as Cons).car as Cons  // 普通变量或 lambda 变量
-                                                              : MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
+               Parser.IsVariable(c.cdr as Cons) ? ((c.cdr as Cons).cdr as Cons).car as string  // 普通变量或 lambda 变量
+                                                : MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
             env.DefineVariable(defineVariable(exp), defineValue(exp));
             return null;
         }

@@ -186,23 +186,23 @@ namespace JymlTypeSystem {
         /// 表示基本过程的名称
         /// </summary>
         public enum Primitive {
-            Add,
-            Sub,
-            Multi,
-            Div,
-            Rem,
-            Cons
+            add,
+            sub,
+            multi,
+            div,
+            rem,
+            cons
         }
 
         private Primitive _primitive;
 
         public static Dictionary<string, PrimitiveProcedure> PrimitiveProcedures = new Dictionary<string, PrimitiveProcedure>() {
-            { Primitive.Add.ToString(), new PrimitiveProcedure(Primitive.Add) },
-            { Primitive.Sub.ToString(), new PrimitiveProcedure(Primitive.Sub) },
-            { Primitive.Multi.ToString(), new PrimitiveProcedure(Primitive.Multi) },
-            { Primitive.Div.ToString(), new PrimitiveProcedure(Primitive.Div) },
-            { Primitive.Rem.ToString(), new PrimitiveProcedure(Primitive.Rem) },
-            { Primitive.Cons.ToString(), new PrimitiveProcedure(Primitive.Cons) },
+            { Primitive.add.ToString(), new PrimitiveProcedure(Primitive.add) },
+            { Primitive.sub.ToString(), new PrimitiveProcedure(Primitive.sub) },
+            { Primitive.multi.ToString(), new PrimitiveProcedure(Primitive.multi) },
+            { Primitive.div.ToString(), new PrimitiveProcedure(Primitive.div) },
+            { Primitive.rem.ToString(), new PrimitiveProcedure(Primitive.rem) },
+            { Primitive.cons.ToString(), new PrimitiveProcedure(Primitive.cons) },
         };
 
         public PrimitiveProcedure(Primitive primitive) {
@@ -211,7 +211,7 @@ namespace JymlTypeSystem {
 
         public object Invoke(params object[] arguments) {
             switch (_primitive) {
-                case Primitive.Add:
+                case Primitive.add:
                     if (arguments[0] is BigInteger bigInteger1) {
                         if (arguments[1] is BigInteger bigInteger2) {
                             return bigInteger1 + bigInteger2;
@@ -234,7 +234,7 @@ namespace JymlTypeSystem {
                     else {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
-                case Primitive.Sub:
+                case Primitive.sub:
                     if (arguments[0] is BigInteger bigInteger3) {
                         if (arguments[1] is BigInteger bigInteger4) {
                             return bigInteger3 - bigInteger4;
@@ -246,7 +246,7 @@ namespace JymlTypeSystem {
                     else {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
-                case Primitive.Multi:
+                case Primitive.multi:
                     if (arguments[0] is BigInteger bigInteger5) {
                         if (arguments[1] is BigInteger bigInteger6) {
                             return bigInteger5 * bigInteger6;
@@ -258,7 +258,7 @@ namespace JymlTypeSystem {
                     else {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
-                case Primitive.Div:
+                case Primitive.div:
                     if (arguments[0] is BigInteger bigInteger7) {
                         if (arguments[1] is BigInteger bigInteger8) {
                             return bigInteger7 - bigInteger8;
@@ -270,7 +270,7 @@ namespace JymlTypeSystem {
                     else {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
-                case Primitive.Rem:
+                case Primitive.rem:
                     if (arguments[0] is BigInteger bigInteger9) {
                         if (arguments[1] is BigInteger bigInteger10) {
                             return bigInteger9 - bigInteger10;
@@ -282,7 +282,7 @@ namespace JymlTypeSystem {
                     else {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
-                case Primitive.Cons:
+                case Primitive.cons:
                     if (arguments.Length == 1) {
                         return new Cons(arguments[0]);
                     }
