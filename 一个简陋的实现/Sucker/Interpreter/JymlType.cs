@@ -76,7 +76,7 @@ namespace JymlTypeSystem {
     }
 
     public class Number : JymlType {
-        private BigInteger _number;
+        internal BigInteger _number;
 
         public Number(string exp) {
             try {
@@ -86,6 +86,14 @@ namespace JymlTypeSystem {
                 throw new InvalidCastException($"{exp} 是无效的 Number。", ex);
             }
         }
+
+        public Number(BigInteger bi) => _number = bi;
+
+        public static Number operator +(Number x, Number y) => new Number(x._number + y._number);
+        public static Number operator -(Number x, Number y) => new Number(x._number - y._number);
+        public static Number operator *(Number x, Number y) => new Number(x._number * y._number);
+        public static Number operator /(Number x, Number y) => new Number(x._number / y._number);
+        public static Number operator %(Number x, Number y) => new Number(x._number % y._number);
 
         public override string ToString() => _number.ToString();
     }
@@ -128,8 +136,8 @@ namespace JymlTypeSystem {
 
         public DateTime(System.DateTime dateTime) => Date = dateTime;
 
-        public static DateTime operator +(BigInteger bi, DateTime dt) => new DateTime(dt.Date.AddDays(bi.BigIntegerToInt64()));
-        public static DateTime operator +(DateTime dt, BigInteger bi) => new DateTime(dt.Date.AddDays(bi.BigIntegerToInt64()));
+        public static DateTime operator +(Number bi, DateTime dt) => new DateTime(dt.Date.AddDays(bi._number.BigIntegerToInt64()));
+        public static DateTime operator +(DateTime dt, Number bi) => new DateTime(dt.Date.AddDays(bi._number.BigIntegerToInt64()));
 
         public override string ToString() {
             return $"{Date.Month}/{Date.Day}/{Date.Year}";
@@ -212,8 +220,8 @@ namespace JymlTypeSystem {
         public object Invoke(params object[] arguments) {
             switch (_primitive) {
                 case Primitive.add:
-                    if (arguments[0] is BigInteger bigInteger1) {
-                        if (arguments[1] is BigInteger bigInteger2) {
+                    if (arguments[0] is Number bigInteger1) {
+                        if (arguments[1] is Number bigInteger2) {
                             return bigInteger1 + bigInteger2;
                         }
                         else if (arguments[1] is DateTime dateTime) {
@@ -224,7 +232,7 @@ namespace JymlTypeSystem {
                         }
                     }
                     else if (arguments[0] is DateTime dateTime) {
-                        if (arguments[1] is BigInteger bigInteger) {
+                        if (arguments[1] is Number bigInteger) {
                             return dateTime + bigInteger;
                         }
                         else {
@@ -235,8 +243,8 @@ namespace JymlTypeSystem {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.sub:
-                    if (arguments[0] is BigInteger bigInteger3) {
-                        if (arguments[1] is BigInteger bigInteger4) {
+                    if (arguments[0] is Number bigInteger3) {
+                        if (arguments[1] is Number bigInteger4) {
                             return bigInteger3 - bigInteger4;
                         }
                         else {
@@ -247,8 +255,8 @@ namespace JymlTypeSystem {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.multi:
-                    if (arguments[0] is BigInteger bigInteger5) {
-                        if (arguments[1] is BigInteger bigInteger6) {
+                    if (arguments[0] is Number bigInteger5) {
+                        if (arguments[1] is Number bigInteger6) {
                             return bigInteger5 * bigInteger6;
                         }
                         else {
@@ -259,8 +267,8 @@ namespace JymlTypeSystem {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.div:
-                    if (arguments[0] is BigInteger bigInteger7) {
-                        if (arguments[1] is BigInteger bigInteger8) {
+                    if (arguments[0] is Number bigInteger7) {
+                        if (arguments[1] is Number bigInteger8) {
                             return bigInteger7 - bigInteger8;
                         }
                         else {
@@ -271,8 +279,8 @@ namespace JymlTypeSystem {
                         throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
                     }
                 case Primitive.rem:
-                    if (arguments[0] is BigInteger bigInteger9) {
-                        if (arguments[1] is BigInteger bigInteger10) {
+                    if (arguments[0] is Number bigInteger9) {
+                        if (arguments[1] is Number bigInteger10) {
                             return bigInteger9 - bigInteger10;
                         }
                         else {
