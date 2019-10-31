@@ -74,6 +74,15 @@ namespace Jyml.Environment {
 
         public void SetVariableValue(string var, JymlType val) => FrameNode[var].Value = val;
 
+        public JymlType GetVariableValue(string var) {
+            foreach (var env in this) {
+                if (env.FrameNode[var]!=null) {
+                    return env.FrameNode[var].Value;
+                }
+            }
+            throw new Exception($"变量 {var} 未定义。");
+        }
+
         public void DefineVariable(string var, JymlType val) {
             FrameNode.AddBindingToFrame(var, val);
         }

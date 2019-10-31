@@ -30,14 +30,19 @@ namespace Interpreter {
                 else if (exp.car is Cons subexp) {
                     return new Cons(Eval(subexp, env), Eval(exp.cdr as Cons, env));
                 }
-                else if (Parser.IsVariable(exp)) {
-                    return new Cons(env.FrameNode[exp.car as string].Value);
-                }
+                //else if (Parser.IsVariable(exp)) {
+                //    return new Cons(env.FrameNode[exp.car as string].Value);
+                //}
                 else {
-                    return Apply(
-                        Eval(exp.car as Cons, env),
-                        ListOfValues(exp.cdr as Cons, env)
-                    );
+                    if (exp.car is string proc) {
+                        return Apply(proc, ListOfValues(exp.cdr as Cons, env), env);
+                    }
+                    else if (exp.car is Cons cons) {
+                        return Apply(cons, ListOfValues(exp.cdr as Cons, env), env);
+                    }
+                    else {
+                        throw new Exception($"无效的过程调用：{exp}");
+                    }
                 }
             }
             else {
@@ -147,11 +152,11 @@ namespace Interpreter {
                                                                     (procedure-enviroment procedure)))]
                         [else (error "Unknown procedure type -- Apply" procedure)]))
          */
-        private static Cons Apply(Cons proc, Cons arguments) {
+        private static Cons Apply(Cons proc, Cons arguments, JymlEnvironment env) {
             if (proc.car is string procedureName) {
                 if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(procedureName)) {
                     // (apply-primitive-procedure procedure arguments)
-                    return new Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ToArray()));
+                    return new Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ConsToArguments(env)));
                 }
                 else {
                     /*
@@ -162,7 +167,7 @@ namespace Interpreter {
                      */
                     Procedures p = proc.car as Procedures;
                     string[] variables = p.Parameters.ToArray<string>();
-                    JymlType[] values = arguments.ToArray<JymlType>();
+                    JymlType[] values = arguments.ConsToArguments(env);
                     return EvalSequence(
                         cons: proc,
                         env: p.Environment.ExtendEnvironment(variables, values)
@@ -171,6 +176,28 @@ namespace Interpreter {
             }
             else {
                 throw new Exception();
+            }
+        }
+
+        private static Cons Apply(string proc, Cons arguments, JymlEnvironment env) {
+            if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(proc)) {
+                // (apply-primitive-procedure procedure arguments)
+                return new Cons(PrimitiveProcedure.PrimitiveProcedures[proc].Invoke(arguments.ConsToArguments(env)));
+            }
+            else {
+                /*
+                 * (eval-sequence (procedure-body procedure) (extend-enviroment
+                                                        (procedure-parameters procedure)
+                                                        arguments
+                                                        (procedure-enviroment procedure)))
+                 */
+                Procedures p = env.FrameNode[proc].Value as Procedures;
+                string[] variables = p.Parameters.ToArray<string>();
+                JymlType[] values = arguments.ConsToArguments(env);
+                return EvalSequence(
+                    cons: proc,
+                    env: p.Environment.ExtendEnvironment(variables, values)
+                );
             }
         }
 
@@ -184,7 +211,27 @@ namespace Interpreter {
                    (mcons  (eval (car exps) env)
                            (list-of-values (cdr exps) env))))
          */
-        private static Cons ListOfValues(Cons exp, JymlEnvironment env) =>
-            new Cons(Eval(exp.car as Cons, env), ListOfValues(exp.cdr as Cons, env));
+        private static Cons ListOfValues(Cons arguments, JymlEnvironment env) {
+            // 考虑实现下面的 Select
+            //arguments.Select(o => {
+            //    if (o is string str) {
+            //        return str;
+            //    }
+            //    else if (o is Cons cons) {
+            //        return Eval(cons, env);
+            //    }
+            //});
+            if (arguments != null) {
+                if (arguments.car is string arg) {
+                    return new Cons(arg, ListOfValues(arguments.cdr as Cons, env));
+                }
+                else {
+                    return new Cons(Eval(arguments.car as Cons, env).car as string, ListOfValues(arguments.cdr as Cons, env));
+                }
+            }
+            else {
+                return null;
+            }
+        }
     }
 }

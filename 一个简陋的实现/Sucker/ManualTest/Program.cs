@@ -86,7 +86,10 @@ namespace ManualTest {
 
         private static void TestEval((Language lang, Cons ast) dispatch) {
             Console.WriteLine("Test Eval...");
-            Console.WriteLine(SuckerInterpreter.Eval(dispatch));
+            Cons res = SuckerInterpreter.Eval(dispatch) as Cons;
+            foreach (var item in res) {
+                Console.WriteLine(item);
+            }
         }
     }
 }

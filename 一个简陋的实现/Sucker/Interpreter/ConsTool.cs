@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using JymlTypeSystem;
 
 namespace JymlAST {
@@ -13,5 +11,21 @@ namespace JymlAST {
             }
             return arr;
         }
+
+        public static JymlType[] ConsToArguments(this Cons cons, Jyml.Environment.JymlEnvironment env) {
+            JymlType[] arr = new JymlType[cons.Length];
+            int i = 0;
+            foreach (var item in cons) {
+                try {
+                    arr[i] = JymlType.CreateType(item as string);
+                }
+                catch (InvalidCastException) {
+                    arr[i] = env.GetVariableValue(item as string);
+                }
+                i++;
+            }
+            return arr;
+        }
+
     }
 }
