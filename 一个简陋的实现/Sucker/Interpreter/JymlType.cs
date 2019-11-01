@@ -65,6 +65,10 @@ namespace JymlTypeSystem {
             }
         }
 
+        public static Boolean operator !(Boolean other) => new Boolean(!other._bool);
+        public static Boolean operator ==(Boolean b1, Boolean b2) => new Boolean(b1._bool == b2._bool);
+        public static Boolean operator !=(Boolean b1, Boolean b2) => new Boolean(b1._bool != b2._bool);
+
         public override string ToString() {
             if (_bool) {
                 return "true";
@@ -94,6 +98,12 @@ namespace JymlTypeSystem {
         public static Number operator *(Number x, Number y) => new Number(x._number * y._number);
         public static Number operator /(Number x, Number y) => new Number(x._number / y._number);
         public static Number operator %(Number x, Number y) => new Number(x._number % y._number);
+        public static Boolean operator <(Number left, Number right) => new Boolean(left._number < right._number);
+        public static Boolean operator <=(Number left, Number right) => new Boolean(left._number <= right._number);
+        public static Boolean operator ==(Number left, Number right) => new Boolean(left._number == right._number);
+        public static Boolean operator !=(Number left, Number right) => new Boolean(left._number != right._number);
+        public static Boolean operator >=(Number left, Number right) => new Boolean(left._number >= right._number);
+        public static Boolean operator >(Number left, Number right) => new Boolean(left._number > right._number);
 
         public override string ToString() => _number.ToString();
     }
@@ -138,6 +148,12 @@ namespace JymlTypeSystem {
 
         public static DateTime operator +(Number bi, DateTime dt) => new DateTime(dt.Date.AddDays(bi._number.BigIntegerToInt64()));
         public static DateTime operator +(DateTime dt, Number bi) => new DateTime(dt.Date.AddDays(bi._number.BigIntegerToInt64()));
+        public static Boolean operator ==(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Equals(dt1.Date,dt2.Date));
+        public static Boolean operator !=(DateTime dt1, DateTime dt2) => new Boolean(!System.DateTime.Equals(dt1.Date, dt2.Date));
+        public static Boolean operator <(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == -1);
+        public static Boolean operator >(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == 1);
+        public static Boolean operator <=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == -1 || System.DateTime.Compare(dt1.Date, dt2.Date) == 0);
+        public static Boolean operator >=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == 1 || System.DateTime.Compare(dt1.Date, dt2.Date) == 0);
 
         public override string ToString() {
             return $"{Date.Month}/{Date.Day}/{Date.Year}";
@@ -243,75 +259,100 @@ namespace JymlTypeSystem {
         public object Invoke(params object[] arguments) {
             switch (_primitive) {
                 case Primitive.add:
-                    if (arguments[0] is Number bigInteger1) {
-                        if (arguments[1] is Number bigInteger2) {
-                            return bigInteger1 + bigInteger2;
+                    if (arguments.Length == 2) {
+                        if (arguments[0] is Number bigInteger1) {
+                            if (arguments[1] is Number bigInteger2) {
+                                return bigInteger1 + bigInteger2;
+                            }
+                            else if (arguments[1] is DateTime dateTime) {
+                                return bigInteger1 + dateTime;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
                         }
-                        else if (arguments[1] is DateTime dateTime) {
-                            return bigInteger1 + dateTime;
+                        else if (arguments[0] is DateTime dateTime) {
+                            if (arguments[1] is Number bigInteger) {
+                                return dateTime + bigInteger;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
                         }
                         else {
-                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
-                        }
-                    }
-                    else if (arguments[0] is DateTime dateTime) {
-                        if (arguments[1] is Number bigInteger) {
-                            return dateTime + bigInteger;
-                        }
-                        else {
-                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
                         }
                     }
                     else {
-                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.sub:
-                    if (arguments[0] is Number bigInteger3) {
-                        if (arguments[1] is Number bigInteger4) {
-                            return bigInteger3 - bigInteger4;
+                    if (arguments.Length == 2) {
+                        if (arguments[0] is Number bigInteger3) {
+                            if (arguments[1] is Number bigInteger4) {
+                                return bigInteger3 - bigInteger4;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
                         }
                         else {
-                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
                         }
                     }
                     else {
-                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.multi:
-                    if (arguments[0] is Number bigInteger5) {
-                        if (arguments[1] is Number bigInteger6) {
-                            return bigInteger5 * bigInteger6;
+                    if (arguments.Length == 2) {
+                        if (arguments[0] is Number bigInteger5) {
+                            if (arguments[1] is Number bigInteger6) {
+                                return bigInteger5 * bigInteger6;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
                         }
                         else {
-                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
                         }
                     }
                     else {
-                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.div:
-                    if (arguments[0] is Number bigInteger7) {
-                        if (arguments[1] is Number bigInteger8) {
-                            return bigInteger7 - bigInteger8;
+                    if (arguments.Length == 2) {
+                        if (arguments[0] is Number bigInteger7) {
+                            if (arguments[1] is Number bigInteger8) {
+                                return bigInteger7 - bigInteger8;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
                         }
                         else {
-                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
                         }
                     }
                     else {
-                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.rem:
-                    if (arguments[0] is Number bigInteger9) {
-                        if (arguments[1] is Number bigInteger10) {
-                            return bigInteger9 - bigInteger10;
+                    if (arguments.Length == 2) {
+                        if (arguments[0] is Number bigInteger9) {
+                            if (arguments[1] is Number bigInteger10) {
+                                return bigInteger9 - bigInteger10;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
                         }
                         else {
-                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 方法。");
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
                         }
                     }
                     else {
-                        throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 方法。");
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.cons:
                     if (arguments.Length == 1) {
@@ -339,14 +380,78 @@ namespace JymlTypeSystem {
                         throw new InvalidCastException($"参数列表与 Cons 不匹配。");
                     }
                 case Primitive.and:
+                    if (arguments.Length == 2) {
+                        if (arguments[0] is Boolean bool1) {
+                            if (arguments[1] is Boolean bool2) {
+                                return new Boolean(bool1 && bool2);
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.or:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.not:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.lessThan:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.lessThanOrEqualTo:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.equalTo:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.greaterThan:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.greaterThanOrEqualTo:
+                    if (arguments.Length == 2) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
+                    }
                 case Primitive.notEqualTo:
+                    if (arguments.Length == 1) {
+
+                    }
+                    else {
+                        throw new InvalidProgramException($"{_primitive} 过程是个一元运算符，只能匹配一个运算对象。");
+                    }
                 default:
                     throw new InvalidCastException($"未知过程类型：Primitive.{_primitive}");
             }
