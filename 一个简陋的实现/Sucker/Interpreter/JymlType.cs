@@ -41,7 +41,7 @@ namespace JymlTypeSystem {
 
     public class Null : JymlType {
         public Null(string str) {
-            if (str!="null") {
+            if (str != "null") {
                 throw new InvalidCastException($"无法解析 {str}, 空类型应该为：null.");
             }
         }
@@ -199,7 +199,16 @@ namespace JymlTypeSystem {
             multi,
             div,
             rem,
-            cons
+            cons,
+            and,
+            or,
+            not,
+            equalTo,
+            notEqualTo,
+            greaterThan,
+            greaterThanOrEqualTo,
+            lessThan,
+            lessThanOrEqualTo
         }
 
         private Primitive _primitive;
@@ -211,6 +220,20 @@ namespace JymlTypeSystem {
             { Primitive.div.ToString(), new PrimitiveProcedure(Primitive.div) },
             { Primitive.rem.ToString(), new PrimitiveProcedure(Primitive.rem) },
             { Primitive.cons.ToString(), new PrimitiveProcedure(Primitive.cons) },
+            { "+", new PrimitiveProcedure(Primitive.add) },
+            { "-", new PrimitiveProcedure(Primitive.sub) },
+            { "*", new PrimitiveProcedure(Primitive.multi) },
+            { "/", new PrimitiveProcedure(Primitive.div) },
+            { "%", new PrimitiveProcedure(Primitive.rem) },
+            { "<", new PrimitiveProcedure(Primitive.lessThan) },
+            { "<=", new PrimitiveProcedure(Primitive.lessThanOrEqualTo)  },
+            { "=", new PrimitiveProcedure(Primitive.equalTo) },
+            { "!=", new PrimitiveProcedure(Primitive.notEqualTo) },
+            { ">", new PrimitiveProcedure(Primitive.greaterThan) },
+            { ">=", new PrimitiveProcedure(Primitive.greaterThanOrEqualTo) },
+            { "and", new PrimitiveProcedure(Primitive.and) },
+            { "or", new PrimitiveProcedure(Primitive.or) },
+            { "not", new PrimitiveProcedure(Primitive.not) },
         };
 
         public PrimitiveProcedure(Primitive primitive) {
@@ -294,12 +317,36 @@ namespace JymlTypeSystem {
                     if (arguments.Length == 1) {
                         return new Cons(arguments[0]);
                     }
-                    else if (arguments.Length > 1) {
+                    else if (arguments.Length == 2) {
                         return new Cons(arguments[0], arguments[1]);
+                    }
+                    else if (arguments.Length > 2) {
+                        Cons cons = new Cons(null);
+                        Cons current = cons;
+                        for (int i = 0; i < arguments.Length; i++) {
+                            cons.car = arguments[i];
+                            if (i < arguments.Length - 1) {
+                                cons.cdr = new Cons(null);
+                                cons = cons.cdr as Cons;
+                            }
+                            else {
+                                cons.cdr = null;
+                            }
+                        }
+                        return current;
                     }
                     else {
                         throw new InvalidCastException($"参数列表与 Cons 不匹配。");
                     }
+                case Primitive.and:
+                case Primitive.or:
+                case Primitive.not:
+                case Primitive.lessThan:
+                case Primitive.lessThanOrEqualTo:
+                case Primitive.equalTo:
+                case Primitive.greaterThan:
+                case Primitive.greaterThanOrEqualTo:
+                case Primitive.notEqualTo:
                 default:
                     throw new InvalidCastException($"未知过程类型：Primitive.{_primitive}");
             }

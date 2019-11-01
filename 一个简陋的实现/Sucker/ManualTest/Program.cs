@@ -88,8 +88,16 @@ namespace ManualTest {
             Console.WriteLine("Test Eval...");
             Cons res = SuckerInterpreter.Eval(dispatch) as Cons;
             foreach (var item in res) {
-                Console.WriteLine(item);
+                if (item != null) {
+                    if (item is Cons cons) {
+                        Console.WriteLine(cons.car);  
+                    }
+                    else {
+                        Console.WriteLine(item);
+                    }
+                }
             }
+            Console.WriteLine("\n\n");
         }
     }
 }
