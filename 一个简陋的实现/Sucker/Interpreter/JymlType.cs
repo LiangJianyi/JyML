@@ -48,7 +48,7 @@ namespace JymlTypeSystem {
     }
 
     public class Boolean : JymlType {
-        private bool _bool;
+        internal bool _bool;
 
         public Boolean(bool b) => _bool = b;
 
@@ -68,6 +68,10 @@ namespace JymlTypeSystem {
         public static Boolean operator !(Boolean other) => new Boolean(!other._bool);
         public static Boolean operator ==(Boolean b1, Boolean b2) => new Boolean(b1._bool == b2._bool);
         public static Boolean operator !=(Boolean b1, Boolean b2) => new Boolean(b1._bool != b2._bool);
+
+        public static Boolean And(Boolean b1, Boolean b2) => new Boolean(b1._bool && b2._bool);
+        public static Boolean Or(Boolean b1, Boolean b2) => new Boolean(b1._bool || b2._bool);
+        public static Boolean Not(Boolean b) => !b;
 
         public override string ToString() {
             if (_bool) {
@@ -109,7 +113,7 @@ namespace JymlTypeSystem {
     }
 
     public class String : JymlType {
-        private string _string;
+        internal string _string;
 
         public String(string exp) {
             if (exp[0] == '"' && exp[exp.Length - 1] == '"') {
@@ -125,11 +129,14 @@ namespace JymlTypeSystem {
             }
         }
 
+        public static Boolean operator ==(String s1, String s2) => new Boolean(s1._string == s2._string);
+        public static Boolean operator !=(String s1, String s2) => new Boolean(s1._string != s2._string);
+
         public override string ToString() => $"\"{_string}\"";
     }
 
     public class DateTime : JymlType {
-        public System.DateTime Date { get; private set; }
+        internal System.DateTime _date;
 
         public DateTime(string exp) {
             string[] tokens = exp.Split('/');
@@ -137,26 +144,26 @@ namespace JymlTypeSystem {
                 int monthValue = Convert.ToInt32(tokens[0]);
                 int dayValue = Convert.ToInt32(tokens[1]);
                 int yearValue = Convert.ToInt32(tokens[2]);
-                Date = new System.DateTime(yearValue, monthValue, dayValue);
+                _date = new System.DateTime(yearValue, monthValue, dayValue);
             }
             else {
                 throw new InvalidCastException($"Date time format error: {tokens}");
             }
         }
 
-        public DateTime(System.DateTime dateTime) => Date = dateTime;
+        public DateTime(System.DateTime dateTime) => _date = dateTime;
 
-        public static DateTime operator +(Number bi, DateTime dt) => new DateTime(dt.Date.AddDays(bi._number.BigIntegerToInt64()));
-        public static DateTime operator +(DateTime dt, Number bi) => new DateTime(dt.Date.AddDays(bi._number.BigIntegerToInt64()));
-        public static Boolean operator ==(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Equals(dt1.Date,dt2.Date));
-        public static Boolean operator !=(DateTime dt1, DateTime dt2) => new Boolean(!System.DateTime.Equals(dt1.Date, dt2.Date));
-        public static Boolean operator <(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == -1);
-        public static Boolean operator >(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == 1);
-        public static Boolean operator <=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == -1 || System.DateTime.Compare(dt1.Date, dt2.Date) == 0);
-        public static Boolean operator >=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1.Date, dt2.Date) == 1 || System.DateTime.Compare(dt1.Date, dt2.Date) == 0);
+        public static DateTime operator +(Number bi, DateTime dt) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
+        public static DateTime operator +(DateTime dt, Number bi) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
+        public static Boolean operator ==(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Equals(dt1._date, dt2._date));
+        public static Boolean operator !=(DateTime dt1, DateTime dt2) => new Boolean(!System.DateTime.Equals(dt1._date, dt2._date));
+        public static Boolean operator <(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == -1);
+        public static Boolean operator >(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == 1);
+        public static Boolean operator <=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == -1 || System.DateTime.Compare(dt1._date, dt2._date) == 0);
+        public static Boolean operator >=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == 1 || System.DateTime.Compare(dt1._date, dt2._date) == 0);
 
         public override string ToString() {
-            return $"{Date.Month}/{Date.Day}/{Date.Year}";
+            return $"{_date.Month}/{_date.Day}/{_date.Year}";
         }
     }
 
@@ -256,7 +263,7 @@ namespace JymlTypeSystem {
             _primitive = primitive;
         }
 
-        public object Invoke(params object[] arguments) {
+        public JymlType Invoke(params object[] arguments) {
             switch (_primitive) {
                 case Primitive.add:
                     if (arguments.Length == 2) {
@@ -383,7 +390,7 @@ namespace JymlTypeSystem {
                     if (arguments.Length == 2) {
                         if (arguments[0] is Boolean bool1) {
                             if (arguments[1] is Boolean bool2) {
-                                return new Boolean(bool1 && bool2);
+                                return Boolean.And(bool1, bool2);
                             }
                             else {
                                 throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
@@ -398,56 +405,211 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.or:
                     if (arguments.Length == 2) {
-
+                        if (arguments[0] is Boolean bool1) {
+                            if (arguments[1] is Boolean bool2) {
+                                return Boolean.Or(bool1, bool2);
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.not:
-                    if (arguments.Length == 2) {
-
+                    if (arguments.Length == 1) {
+                        if (arguments[0] is Boolean b) {
+                            return Boolean.Not(b);
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.lessThan:
                     if (arguments.Length == 2) {
-
+                        if (arguments[0] is Number number1) {
+                            if (arguments[1] is Number number2) {
+                                return number1 < number2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is DateTime date1) {
+                            if (arguments[1] is DateTime date2) {
+                                return date1 < date2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.lessThanOrEqualTo:
                     if (arguments.Length == 2) {
-
+                        if (arguments[0] is Number number1) {
+                            if (arguments[1] is Number number2) {
+                                return number1 <= number2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is DateTime date1) {
+                            if (arguments[1] is DateTime date2) {
+                                return date1 <= date2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.equalTo:
                     if (arguments.Length == 2) {
-
+                        if (arguments[0] is Number number1) {
+                            if (arguments[1] is Number number2) {
+                                return number1 == number2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is DateTime date1) {
+                            if (arguments[1] is DateTime date2) {
+                                return date1 == date2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is Boolean bool1) {
+                            if (arguments[1] is Boolean bool2) {
+                                return bool1 == bool2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is String str1) {
+                            if (arguments[1] is String str2) {
+                                return str1 == str2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.greaterThan:
                     if (arguments.Length == 2) {
-
+                        if (arguments[0] is Number number1) {
+                            if (arguments[1] is Number number2) {
+                                return number1 > number2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is DateTime date1) {
+                            if (arguments[1] is DateTime date2) {
+                                return date1 > date2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.greaterThanOrEqualTo:
                     if (arguments.Length == 2) {
-
+                        if (arguments[0] is Number number1) {
+                            if (arguments[1] is Number number2) {
+                                return number1 >= number2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is DateTime date1) {
+                            if (arguments[1] is DateTime date2) {
+                                return date1 >= date2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个二元运算符，只能匹配两个运算对象。");
                     }
                 case Primitive.notEqualTo:
                     if (arguments.Length == 1) {
-
+                        if (arguments[0] is Number number1) {
+                            if (arguments[1] is Number number2) {
+                                return number1 != number2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is DateTime date1) {
+                            if (arguments[1] is DateTime date2) {
+                                return date1 != date2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is Boolean bool1) {
+                            if (arguments[1] is Boolean bool2) {
+                                return bool1 != bool2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else if (arguments[0] is String str1) {
+                            if (arguments[1] is String str2) {
+                                return str1 != str2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
                     }
                     else {
                         throw new InvalidProgramException($"{_primitive} 过程是个一元运算符，只能匹配一个运算对象。");
