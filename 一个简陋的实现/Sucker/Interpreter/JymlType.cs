@@ -81,6 +81,14 @@ namespace JymlTypeSystem {
                 return "false";
             }
         }
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + _bool.GetHashCode();
+            }
+        }
+
+        public override bool Equals(object obj) => _bool == (obj as Boolean)._bool;
     }
 
     public class Number : JymlType {
@@ -110,6 +118,14 @@ namespace JymlTypeSystem {
         public static Boolean operator >(Number left, Number right) => new Boolean(left._number > right._number);
 
         public override string ToString() => _number.ToString();
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + _number.GetHashCode();
+            }
+        }
+
+        public override bool Equals(object obj) => _number == (obj as Number)._number;
     }
 
     public class String : JymlType {
@@ -133,6 +149,14 @@ namespace JymlTypeSystem {
         public static Boolean operator !=(String s1, String s2) => new Boolean(s1._string != s2._string);
 
         public override string ToString() => $"\"{_string}\"";
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + _string.GetHashCode();
+            }
+        }
+
+        public override bool Equals(object obj) => _string == (obj as String)._string;
     }
 
     public class DateTime : JymlType {
@@ -162,9 +186,15 @@ namespace JymlTypeSystem {
         public static Boolean operator <=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == -1 || System.DateTime.Compare(dt1._date, dt2._date) == 0);
         public static Boolean operator >=(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == 1 || System.DateTime.Compare(dt1._date, dt2._date) == 0);
 
-        public override string ToString() {
-            return $"{_date.Month}/{_date.Day}/{_date.Year}";
+        public override string ToString() => $"{_date.Month}/{_date.Day}/{_date.Year}";
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + _date.GetHashCode();
+            }
         }
+
+        public override bool Equals(object obj) => _date == (obj as DateTime)._date;
     }
 
     /// <summary>

@@ -3,9 +3,37 @@ using System.Linq;
 
 namespace JymlParser {
     public class Tokenizer {
+        /// <summary>
+        /// 表示独立存在的 token，每个 SelfExistentToken 都有一个起始标记（StartMark）和结束标记（EndMark），
+        /// 起始标记和结束标记之间的内容和标记本身构成的字串组成一个 SelfExistentToken，当 Tokenizer 切割文本时
+        /// 遇上了 SelfExistentToken，无论其中是否包含 seperator，都将 SelfExistentToken 的内容作为单独的 token。
+        /// </summary>
+        public class SelfExistentToken {
+            public char StartMark { get; private set; }
+            public char EndMark { get; private set; }
+            public int StartMarkIndex { get; private set; } = -1;
+            public int EndMarkIndex { get; private set; } = -1;
+            public SelfExistentToken(char startMark, char endMark) {
+                StartMark = startMark;
+                EndMark = endMark;
+            }
+            public int Capture(string text, int i) {
+                StartMarkIndex = i;
+                i++;
+                while (i < text.Length) {
+                    if (text[i] == EndMark) {
+                        EndMarkIndex = i;
+                        return i;
+                    }
+                }
+                throw new System.FormatException($"SelfExistentToken 没能找到与起始标记 {StartMark} 匹配的结束标记。");
+            }
+        }
+
         private string _text;
         private char[] _seperators;
         private char[] _singles;
+        private SelfExistentToken _selftExistentToken;
 
         public string[] Tokens { get; private set; }
 
@@ -23,13 +51,31 @@ namespace JymlParser {
         }
 
         /// <summary>
+        /// 实例化一个 Splitor
+        /// </summary>
+        /// <param name="text">源字符串</param>
+        /// <param name="seperators">依据该数组中的字符进行切割</param>
+        /// <param name="singles">需要把单个字符作为 token 的字符集</param>
+        public Tokenizer(string text, char[] seperators, char[] singles, SelfExistentToken whiteList) {
+            this._text = text;
+            this._seperators = seperators;
+            this._singles = singles;
+            this._selftExistentToken = whiteList;
+            this.Tokens = MakeTokens();
+        }
+
+        /// <summary>
         /// 切割字串
         /// </summary>
         /// <returns></returns>
         private string[] MakeTokens() {
             string[] temp = null;
             for (int i = 0; i < _text.Length; i++) {
-                if (_singles.Contains(_text[i])) {
+                if (_selftExistentToken.StartMark == _text[i]) {
+                    i = _selftExistentToken.Capture(_text, i);
+                    FillArr(ref temp, _text.Substring(_selftExistentToken.StartMarkIndex, _selftExistentToken.EndMarkIndex - _selftExistentToken.StartMarkIndex + 1));
+                }
+                else if (_singles.Contains(_text[i])) {
                     FillArr(ref temp, _text.Substring(i, 1));
                 }
                 else if (_seperators.Contains(_text[i])) {
@@ -78,6 +124,7 @@ namespace JymlParser {
                 source = arr;
             }
         }
+
 
         /// <summary>
         /// 清除 token 两边的控制字符和空白字符以及无效的 token

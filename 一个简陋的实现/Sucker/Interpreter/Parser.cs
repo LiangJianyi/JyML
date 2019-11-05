@@ -81,7 +81,10 @@ namespace JymlParser {
         public static Cons GetLambdaBody(Cons ast) => (ast.cdr as Cons).cdr as Cons;
 
         public static (Language lang, Cons ast) GenerateAst(string text) {
-            Tokenizer tokenizer = new Tokenizer(text, new char[] { ' ', '\n' }, new char[] { '(', ')', '[', ']' });
+            Tokenizer tokenizer = new Tokenizer(text: text,
+                                                seperators: new char[] { ' ', '\n' },
+                                                singles: new char[] { '(', ')', '[', ']' },
+                                                whiteList: new Tokenizer.SelfExistentToken('"', '"'));
             tokenizer.CleanUpTokens();
             _tokens = Cons.FromArray(tokenizer.Tokens);
             if (_tokens.car as string == "#lang") {
