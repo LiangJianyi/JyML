@@ -76,10 +76,40 @@ namespace Interpreter {
                    (eval (if-alternative exp) env)))
          */
         private static Cons EvalIf(Cons exp, JymlEnvironment env) {
-            Cons predicate = (exp.cdr as Cons).car as Cons;
-            Cons consequent = ((exp.cdr as Cons).cdr as Cons).car as Cons;
-            Cons alternative = ((exp.cdr as Cons).cdr as Cons).cdr as Cons == null ? null
-                                                                                   : (((exp.cdr as Cons).cdr as Cons).cdr as Cons).car as Cons;
+            Cons predicate;
+            if ((exp.cdr as Cons).car is Cons predicateCons) {
+                predicate = predicateCons;
+            }
+            else if ((exp.cdr as Cons).car is string predicateString) {
+                predicate = new Cons(predicateString);
+            }
+            else {
+                throw new Exception($"if 表达式 predicate 部分解析错误，表达式：{exp}");
+            }
+            Cons consequent;
+            if (((exp.cdr as Cons).cdr as Cons).car is Cons consequentCons) {
+                consequent = consequentCons;
+            }
+            else if (((exp.cdr as Cons).cdr as Cons).car is string consequentString) {
+                consequent = new Cons(consequentString);
+            }
+            else {
+                throw new Exception($"if 表达式 consequent 部分解析错误，表达式：{exp}");
+            }
+            Cons alternative;
+            if (((exp.cdr as Cons).cdr as Cons).cdr==null) {
+                alternative = null;
+            }
+            else if ((((exp.cdr as Cons).cdr as Cons).cdr as Cons).car is Cons alternativeCons) {
+                alternative = alternativeCons;
+            }
+            else if ((((exp.cdr as Cons).cdr as Cons).cdr as Cons).car is string alternativeString) {
+                alternative = alternativeString;
+            }
+            else {
+                throw new Exception($"if 表达式 alternative 部分解析错误，表达式：{exp}");
+            }
+
             if ((bool)Eval(predicate, env).car) {
                 return Eval(consequent, env);
             }

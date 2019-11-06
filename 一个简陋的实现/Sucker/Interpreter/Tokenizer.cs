@@ -25,6 +25,7 @@ namespace JymlParser {
                         EndMarkIndex = i;
                         return i;
                     }
+                    i++;
                 }
                 throw new System.FormatException($"SelfExistentToken 没能找到与起始标记 {StartMark} 匹配的结束标记。");
             }
@@ -70,20 +71,36 @@ namespace JymlParser {
         /// <returns></returns>
         private string[] MakeTokens() {
             string[] temp = null;
-            for (int i = 0; i < _text.Length; i++) {
-                if (_selftExistentToken.StartMark == _text[i]) {
-                    i = _selftExistentToken.Capture(_text, i);
-                    FillArr(ref temp, _text.Substring(_selftExistentToken.StartMarkIndex, _selftExistentToken.EndMarkIndex - _selftExistentToken.StartMarkIndex + 1));
+            if (_selftExistentToken != null) {
+                for (int i = 0; i < _text.Length; i++) {
+                    if (_selftExistentToken.StartMark == _text[i]) {
+                        i = _selftExistentToken.Capture(_text, i);
+                        FillArr(ref temp, _text.Substring(_selftExistentToken.StartMarkIndex, _selftExistentToken.EndMarkIndex - _selftExistentToken.StartMarkIndex + 1));
+                    }
+                    else if (_singles.Contains(_text[i])) {
+                        FillArr(ref temp, _text.Substring(i, 1));
+                    }
+                    else if (_seperators.Contains(_text[i])) {
+                        continue;
+                    }
+                    else {
+                        (int start, int end) = GetRange(ref i, _selftExistentToken);
+                        FillArr(ref temp, _text.Substring(start, end - start + 1));
+                    }
                 }
-                else if (_singles.Contains(_text[i])) {
-                    FillArr(ref temp, _text.Substring(i, 1));
-                }
-                else if (_seperators.Contains(_text[i])) {
-                    continue;
-                }
-                else {
-                    (int start, int end) = GetRange(ref i);
-                    FillArr(ref temp, _text.Substring(start, end - start + 1));
+            }
+            else {
+                for (int i = 0; i < _text.Length; i++) {
+                    if (_singles.Contains(_text[i])) {
+                        FillArr(ref temp, _text.Substring(i, 1));
+                    }
+                    else if (_seperators.Contains(_text[i])) {
+                        continue;
+                    }
+                    else {
+                        (int start, int end) = GetRange(ref i);
+                        FillArr(ref temp, _text.Substring(start, end - start + 1));
+                    }
                 }
             }
             return temp;
@@ -97,8 +114,26 @@ namespace JymlParser {
         private (int Start, int End) GetRange(ref int index) {
             int start = index;
             while ((index < this._text.Length) &&
-                    (!_seperators.Contains(_text[index])) &&
-                    (!_singles.Contains(_text[index]))) {
+                   (!_seperators.Contains(_text[index])) &&
+                   (!_singles.Contains(_text[index]))) {
+                index++;
+            }
+            index -= 1;
+            int end = index;
+            return (start, end);
+        }
+
+        /// <summary>
+        /// 根据传入的索引获取组成 token 的字符范围
+        /// </summary>
+        /// <param name="index">代表 token 首字符所在的位置</param>
+        /// <returns></returns>
+        private (int Start, int End) GetRange(ref int index, SelfExistentToken selfExistentToken) {
+            int start = index;
+            while ((index < this._text.Length) &&
+                   (!_seperators.Contains(_text[index])) &&
+                   (!_singles.Contains(_text[index])) &&
+                   (selfExistentToken.EndMark != _text[index])) {
                 index++;
             }
             index -= 1;
