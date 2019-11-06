@@ -10,7 +10,7 @@ namespace Interpreter {
         public static Cons Eval(Cons exp, JymlEnvironment env) {
             if (exp != null) {
                 if (Parser.IsSelfEvaluating(exp)) {
-                    return exp;
+                    return new Cons(exp.car, Eval(exp.cdr as Cons, env));
                 }
                 else if (Parser.IsAssignment(exp)) {
                     return EvalAssignment(exp, env);
@@ -97,7 +97,7 @@ namespace Interpreter {
                 throw new Exception($"if 表达式 consequent 部分解析错误，表达式：{exp}");
             }
             Cons alternative;
-            if (((exp.cdr as Cons).cdr as Cons).cdr==null) {
+            if (((exp.cdr as Cons).cdr as Cons).cdr == null) {
                 alternative = null;
             }
             else if ((((exp.cdr as Cons).cdr as Cons).cdr as Cons).car is Cons alternativeCons) {
