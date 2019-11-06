@@ -68,6 +68,7 @@ namespace JymlTypeSystem {
         public static Boolean operator !(Boolean other) => new Boolean(!other._bool);
         public static Boolean operator ==(Boolean b1, Boolean b2) => new Boolean(b1._bool == b2._bool);
         public static Boolean operator !=(Boolean b1, Boolean b2) => new Boolean(b1._bool != b2._bool);
+        public static implicit operator bool(Boolean b)=>b._bool;
 
         public static Boolean And(Boolean b1, Boolean b2) => new Boolean(b1._bool && b2._bool);
         public static Boolean Or(Boolean b1, Boolean b2) => new Boolean(b1._bool || b2._bool);

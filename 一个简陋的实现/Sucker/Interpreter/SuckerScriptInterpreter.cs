@@ -110,7 +110,7 @@ namespace Interpreter {
                 throw new Exception($"if 表达式 alternative 部分解析错误，表达式：{exp}");
             }
 
-            if ((bool)Eval(predicate, env).car) {
+            if ((Eval(predicate, env).car as JymlTypeSystem.Boolean)) {
                 return Eval(consequent, env);
             }
             else {
