@@ -10,7 +10,7 @@ using Jyml.Environment;
 namespace ManualTest {
     class Program {
         static void Main(string[] args) {
-            string suckerScriptPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\SuckerScript2.mast";
+            string suckerScriptPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\SuckerScript3.mast";
             string suckerScriptText = System.IO.File.ReadAllText(suckerScriptPath);
             string suckerMLPath= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML.mast";
             string suckerMLText= System.IO.File.ReadAllText(suckerMLPath);

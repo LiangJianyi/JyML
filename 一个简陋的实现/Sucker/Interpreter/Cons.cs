@@ -57,7 +57,7 @@ namespace JymlAST {
             }
         }
 
-        public static implicit operator JymlTypeSystem.JymlType(Cons cons) {
+        public static explicit operator JymlTypeSystem.JymlType(Cons cons) {
             if (cons.car is string str) {
                 return JymlTypeSystem.JymlType.CreateType(str);
             }
@@ -66,9 +66,9 @@ namespace JymlAST {
             }
         }
 
-        public static implicit operator Cons(string s) => new Cons(s);
+        public static explicit operator Cons(string s) => new Cons(s);
 
-        public static implicit operator Cons(string[] s) {
+        public static explicit operator Cons(string[] s) {
             Cons c = new Cons();
             Cons temp = c;
             foreach (var item in s) {

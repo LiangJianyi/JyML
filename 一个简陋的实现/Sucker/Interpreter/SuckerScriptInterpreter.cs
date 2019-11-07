@@ -104,7 +104,7 @@ namespace Interpreter {
                 alternative = alternativeCons;
             }
             else if ((((exp.cdr as Cons).cdr as Cons).cdr as Cons).car is string alternativeString) {
-                alternative = alternativeString;
+                alternative = (Cons)alternativeString;
             }
             else {
                 throw new Exception($"if 表达式 alternative 部分解析错误，表达式：{exp}");
@@ -119,7 +119,7 @@ namespace Interpreter {
         }
 
         private static Cons MakeLambda(string[] parameters, Cons body, JymlEnvironment env) {
-            return new Cons(new Procedures(parameters, body, env));
+            return new Cons(new Procedures((Cons)parameters, body, env));
         }
 
         /*
@@ -147,8 +147,8 @@ namespace Interpreter {
                                         [mcdr [mcdr exp]])))        ; body
              */
             JymlType defineValue(Cons c) =>
-               Parser.IsVariable(c.cdr as Cons) ? ((c.cdr as Cons).cdr as Cons).car as string  // 普通变量或 lambda 变量
-                                                : MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
+               Parser.IsVariable(c.cdr as Cons) ? JymlType.CreateType(((c.cdr as Cons).cdr as Cons).car as string)  // 普通变量或 lambda 变量
+                                                : (JymlType)MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
             env.DefineVariable(defineVariable(exp), defineValue(exp));
             return null;
         }
@@ -225,7 +225,7 @@ namespace Interpreter {
                 string[] variables = p.Parameters.ToArray<string>();
                 JymlType[] values = arguments.ConsToArguments(env);
                 return EvalSequence(
-                    cons: proc,
+                    cons: (Cons)proc,
                     env: p.Environment.ExtendEnvironment(variables, values)
                 );
             }
