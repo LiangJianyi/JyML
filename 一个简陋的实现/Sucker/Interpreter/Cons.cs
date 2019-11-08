@@ -92,6 +92,23 @@ namespace JymlAST {
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override string ToString() => $"({this.car} {this.cdr})";
+
+        public override bool Equals(object obj) => Cons.Equals(this, obj as Cons);
+
+        public static bool Equals(Cons cons1, Cons cons2) {
+            if (cons1 != null && cons2 != null) {
+                return cons1.car == cons2.car && cons1.cdr == cons2.cdr;
+            }
+            else {
+                return cons1 == null && cons2 == null;
+            }
+        }
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + (car.GetHashCode() ^ cdr.GetHashCode());
+            }
+        }
     }
 
 }

@@ -20,14 +20,14 @@ namespace ManualTest {
             Console.ReadKey();
         }
 
-        private static void PrintAst(Cons ast) {
+        private static void PrintAst(JymlAST.Cons ast) {
             Console.WriteLine("Print ast...");
-            foreach (Cons year in ast) {
+            foreach (JymlAST.Cons year in ast) {
                 foreach (object item in year) {
                     if (item is string str) {
                         Console.WriteLine(str);
                     }
-                    else if (item is Cons cons) {
+                    else if (item is JymlAST.Cons cons) {
                         Console.WriteLine("month list:");
                         foreach (var month in cons) {
                             Console.WriteLine($"  {month}");
@@ -39,7 +39,7 @@ namespace ManualTest {
             Console.WriteLine("\n\n");
         }
 
-        private static void PrintTopLevel(Cons ast) {
+        private static void PrintTopLevel(JymlAST.Cons ast) {
             Console.WriteLine("Print top level...");
             foreach (var item in ast) {
                 Console.WriteLine(item);
@@ -47,7 +47,7 @@ namespace ManualTest {
             Console.WriteLine("\n\n");
         }
 
-        private static void TestSuckerMLInterpreter((Language lang, Cons ast) dispatch) {
+        private static void TestSuckerMLInterpreter((Language lang, JymlAST.Cons ast) dispatch) {
             Console.WriteLine("TestSuckerMLInterpreter...");
             SuckerMLInterpreter.Sucker sucker = SuckerInterpreter.Eval(dispatch) as SuckerMLInterpreter.Sucker;
             foreach (var year in sucker.Years) {
@@ -84,12 +84,12 @@ namespace ManualTest {
             Console.WriteLine("\n\n");
         }
 
-        private static void TestEval((Language lang, Cons ast) dispatch) {
+        private static void TestEval((Language lang, JymlAST.Cons ast) dispatch) {
             Console.WriteLine("Test Eval...");
-            Cons res = SuckerInterpreter.Eval(dispatch) as Cons;
+            JymlAST.Cons res = SuckerInterpreter.Eval(dispatch) as JymlAST.Cons;
             foreach (var item in res) {
                 if (item != null) {
-                    if (item is Cons cons) {
+                    if (item is JymlAST.Cons cons) {
                         Console.WriteLine(cons.car);  
                     }
                     else {

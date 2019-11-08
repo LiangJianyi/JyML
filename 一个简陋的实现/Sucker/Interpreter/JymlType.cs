@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Janyee.Utilty;
-using JymlAST;
 using Jyml.Environment;
 
 namespace JymlTypeSystem {
@@ -68,7 +67,7 @@ namespace JymlTypeSystem {
         public static Boolean operator !(Boolean other) => new Boolean(!other._bool);
         public static Boolean operator ==(Boolean b1, Boolean b2) => new Boolean(b1._bool == b2._bool);
         public static Boolean operator !=(Boolean b1, Boolean b2) => new Boolean(b1._bool != b2._bool);
-        public static implicit operator bool(Boolean b)=>b._bool;
+        public static implicit operator bool(Boolean b) => b._bool;
 
         public static Boolean And(Boolean b1, Boolean b2) => new Boolean(b1._bool && b2._bool);
         public static Boolean Or(Boolean b1, Boolean b2) => new Boolean(b1._bool || b2._bool);
@@ -204,16 +203,16 @@ namespace JymlTypeSystem {
     public class Procedures : JymlType {
         private readonly string _name;
         private readonly JymlEnvironment _environment;
-        private readonly Cons _body;
-        private readonly Cons _parameters;
+        private readonly JymlAST.Cons _body;
+        private readonly JymlAST.Cons _parameters;
 
         public string Name => _name;
 
         public JymlEnvironment Environment => _environment;
 
-        public Cons Body => _body;
+        public JymlAST.Cons Body => _body;
 
-        public Cons Parameters => _parameters;
+        public JymlAST.Cons Parameters => _parameters;
 
         private string GenerateName() {
             Random random = new Random();
@@ -221,14 +220,14 @@ namespace JymlTypeSystem {
             return "Lambda_" + new string(Enumerable.Repeat(CHARS, 8).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public Procedures(Cons parameters, Cons body, JymlEnvironment environment) {
+        public Procedures(JymlAST.Cons parameters, JymlAST.Cons body, JymlEnvironment environment) {
             _name = GenerateName();
             _parameters = parameters;
             _body = body;
             _environment = environment;
         }
 
-        public Procedures(string name, Cons parameters, Cons body, JymlEnvironment environment) {
+        public Procedures(string name, JymlAST.Cons parameters, JymlAST.Cons body, JymlEnvironment environment) {
             _name = name;
             _parameters = parameters;
             _body = body;
@@ -394,25 +393,25 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.cons:
                     if (arguments.Length == 1) {
-                        return (JymlType)new Cons(arguments[0]);
+                        return (JymlType)new JymlAST.Cons(arguments[0]);
                     }
                     else if (arguments.Length == 2) {
-                        return (JymlType)new Cons(arguments[0], arguments[1]);
+                        return (JymlType)new JymlAST.Cons(arguments[0], arguments[1]);
                     }
                     else if (arguments.Length > 2) {
-                        Cons cons = new Cons(null);
-                        Cons current = cons;
+                        JymlAST.Cons cons = new JymlAST.Cons(null);
+                        JymlAST.Cons current = cons;
                         for (int i = 0; i < arguments.Length; i++) {
                             cons.car = arguments[i];
                             if (i < arguments.Length - 1) {
-                                cons.cdr = new Cons(null);
-                                cons = cons.cdr as Cons;
+                                cons.cdr = new JymlAST.Cons(null);
+                                cons = cons.cdr as JymlAST.Cons;
                             }
                             else {
                                 cons.cdr = null;
                             }
                         }
-                        return (JymlType)current;
+                        return new Cons(current);
                     }
                     else {
                         throw new InvalidCastException($"参数列表与 Cons 不匹配。");
@@ -651,5 +650,22 @@ namespace JymlTypeSystem {
         }
 
         public override string ToString() => $"#<Procedure: {_primitive}>";
+    }
+
+    public class Cons : JymlType {
+        private JymlAST.Cons _cons;
+        public Cons(JymlAST.Cons cons) => _cons = cons;
+        public override string ToString() => _cons.ToString();
+
+        public static bool operator ==(Cons cons1, Cons cons2) => JymlAST.Cons.Equals(cons1, cons2);
+        public static bool operator !=(Cons cons1, Cons cons2) => !JymlAST.Cons.Equals(cons1, cons2);
+
+        public override bool Equals(object obj) => this == obj as Cons;
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + _cons.GetHashCode();
+            }
+        }
     }
 }
