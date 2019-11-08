@@ -771,6 +771,9 @@ namespace JymlTypeSystem {
             if (obj is Cons cons) {
                 _cons = cons._cons;
             }
+            else if (obj is JymlAST.Cons astCons) {
+                _cons = astCons;
+            }
             else {
                 throw new InvalidCastException($"对象 {obj} 与 类型 Cons 不匹配，其类型为：{obj.GetType()}。");
             }
