@@ -29,7 +29,41 @@ namespace JymlTypeSystem {
                             }
                             catch (InvalidCastException) {
                                 // 思考一下将 str 转换为 procedure
-                                throw;
+                                throw new InvalidCastException($"{str} 无法转换为任何类型的 JymlType。");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static JymlType CreateType(object obj) {
+            try {
+                return new Null(obj);
+            }
+            catch (InvalidCastException) {
+                try {
+                    return new Boolean(obj);
+                }
+                catch (InvalidCastException) {
+                    try {
+                        return new Number(obj);
+                    }
+                    catch (InvalidCastException) {
+                        try {
+                            return new String(obj);
+                        }
+                        catch (InvalidCastException) {
+                            try {
+                                return new DateTime(obj);
+                            }
+                            catch (InvalidCastException) {
+                                try {
+                                    return new Cons(obj);
+                                }
+                                catch (InvalidCastException ex) {
+                                    throw new InvalidCastException($"{obj} 无法转换为任何类型的 JymlType。{ex.Message}");
+                                }
                             }
                         }
                     }
@@ -42,6 +76,12 @@ namespace JymlTypeSystem {
         public Null(string str) {
             if (str != "null") {
                 throw new InvalidCastException($"无法解析 {str}, 空类型应该为：null.");
+            }
+        }
+
+        public Null(object obj) {
+            if (!(obj is Null)) {
+                throw new InvalidCastException($"对象 {obj} 与 类型 Null 不匹配，其类型为：{obj.GetType()}。");
             }
         }
     }
@@ -61,6 +101,15 @@ namespace JymlTypeSystem {
                     break;
                 default:
                     throw new InvalidCastException("无效的 token。");
+            }
+        }
+
+        public Boolean(object obj) {
+            if (obj is Boolean b) {
+                _bool = b;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 Boolean 不匹配，其类型为：{obj.GetType()}。");
             }
         }
 
@@ -105,6 +154,15 @@ namespace JymlTypeSystem {
 
         public Number(BigInteger bi) => _number = bi;
 
+        public Number(object obj) {
+            if (obj is Number num) {
+                _number = num._number;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 Number 不匹配，其类型为：{obj.GetType()}。");
+            }
+        }
+
         public static Number operator +(Number x, Number y) => new Number(x._number + y._number);
         public static Number operator -(Number x, Number y) => new Number(x._number - y._number);
         public static Number operator *(Number x, Number y) => new Number(x._number * y._number);
@@ -145,6 +203,15 @@ namespace JymlTypeSystem {
             }
         }
 
+        public String(object obj) {
+            if (obj is String str) {
+                _string = str._string;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 String 不匹配，其类型为：{obj.GetType()}。");
+            }
+        }
+
         public static Boolean operator ==(String s1, String s2) => new Boolean(s1._string == s2._string);
         public static Boolean operator !=(String s1, String s2) => new Boolean(s1._string != s2._string);
 
@@ -176,6 +243,15 @@ namespace JymlTypeSystem {
         }
 
         public DateTime(System.DateTime dateTime) => _date = dateTime;
+
+        public DateTime(object obj) {
+            if (obj is DateTime dateTime) {
+                _date = dateTime._date;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 DateTime 不匹配，其类型为：{obj.GetType()}。");
+            }
+        }
 
         public static DateTime operator +(Number bi, DateTime dt) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
         public static DateTime operator +(DateTime dt, Number bi) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
@@ -253,6 +329,8 @@ namespace JymlTypeSystem {
             div,
             rem,
             cons,
+            car,
+            cdr,
             and,
             or,
             not,
@@ -273,6 +351,8 @@ namespace JymlTypeSystem {
             { Primitive.div.ToString(), new PrimitiveProcedure(Primitive.div) },
             { Primitive.rem.ToString(), new PrimitiveProcedure(Primitive.rem) },
             { Primitive.cons.ToString(), new PrimitiveProcedure(Primitive.cons) },
+            { Primitive.car.ToString(), new PrimitiveProcedure(Primitive.car) },
+            { Primitive.cdr.ToString(), new PrimitiveProcedure(Primitive.cdr) },
             { "+", new PrimitiveProcedure(Primitive.add) },
             { "-", new PrimitiveProcedure(Primitive.sub) },
             { "*", new PrimitiveProcedure(Primitive.multi) },
@@ -414,7 +494,31 @@ namespace JymlTypeSystem {
                         return new Cons(current);
                     }
                     else {
-                        throw new InvalidCastException($"参数列表与 Cons 不匹配。");
+                        throw new InvalidCastException($"参数列表与 {_primitive} 不匹配。");
+                    }
+                case Primitive.car:
+                    if (arguments.Length == 1) {
+                        if (arguments[0] is Cons cons) {
+                            return JymlType.CreateType(cons._cons.car);
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
+                    }
+                    else {
+                        throw new InvalidCastException($"参数列表与 {_primitive} 不匹配。");
+                    }
+                case Primitive.cdr:
+                    if (arguments.Length == 1) {
+                        if (arguments[0] is Cons cons) {
+                            return JymlType.CreateType(cons._cons.cdr);
+                        }
+                        else {
+                            throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
+                        }
+                    }
+                    else {
+                        throw new InvalidCastException($"参数列表与 {_primitive} 不匹配。");
                     }
                 case Primitive.and:
                     if (arguments.Length == 2) {
@@ -546,6 +650,14 @@ namespace JymlTypeSystem {
                                 throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
                             }
                         }
+                        else if (arguments[0] is Cons cons1) {
+                            if (arguments[1] is Cons cons2) {
+                                return cons1 == cons2;
+                            }
+                            else {
+                                throw new InvalidCastException($"参数 {arguments[1]} 无法匹配 {_primitive} 过程。");
+                            }
+                        }
                         else {
                             throw new InvalidCastException($"参数 {arguments[0]} 无法匹配 {_primitive} 过程。");
                         }
@@ -653,12 +765,20 @@ namespace JymlTypeSystem {
     }
 
     public class Cons : JymlType {
-        private JymlAST.Cons _cons;
+        internal JymlAST.Cons _cons;
         public Cons(JymlAST.Cons cons) => _cons = cons;
+        public Cons(object obj) {
+            if (obj is Cons cons) {
+                _cons = cons._cons;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 Cons 不匹配，其类型为：{obj.GetType()}。");
+            }
+        }
         public override string ToString() => _cons.ToString();
 
-        public static bool operator ==(Cons cons1, Cons cons2) => JymlAST.Cons.Equals(cons1, cons2);
-        public static bool operator !=(Cons cons1, Cons cons2) => !JymlAST.Cons.Equals(cons1, cons2);
+        public static Boolean operator ==(Cons cons1, Cons cons2) => new Boolean(JymlAST.Cons.Equals(cons1, cons2));
+        public static Boolean operator !=(Cons cons1, Cons cons2) => new Boolean(!JymlAST.Cons.Equals(cons1, cons2));
 
         public override bool Equals(object obj) => this == obj as Cons;
 

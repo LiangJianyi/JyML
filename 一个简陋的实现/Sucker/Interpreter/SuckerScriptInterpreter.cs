@@ -146,9 +146,23 @@ namespace Interpreter {
                         (make-lambda    [mcdr [mcar [mcdr exp]]]    ; formal parameters
                                         [mcdr [mcdr exp]])))        ; body
              */
-            JymlType defineValue(JymlAST.Cons c) =>
-               Parser.IsVariable(c.cdr as JymlAST.Cons) ? JymlType.CreateType(((c.cdr as JymlAST.Cons).cdr as JymlAST.Cons).car as string)  // 普通变量或 lambda 变量
-                                                : (JymlType)MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
+            JymlType defineValue(JymlAST.Cons c) {
+                if (Parser.IsVariable(c.cdr as JymlAST.Cons)) {
+                    if (((c.cdr as JymlAST.Cons).cdr as JymlAST.Cons).car is string atom) {
+                        return JymlType.CreateType(atom);  // 普通变量或 lambda 变量
+                    }
+                    else if (((c.cdr as JymlAST.Cons).cdr as JymlAST.Cons).car is JymlAST.Cons cons) {
+                        return JymlType.CreateType(Eval(cons, env).car);    // 返回一个 value 的子表达式（过程调用）
+                    }
+                    else {
+                        throw new Exception($"define 表达式 {exp} 的 value 部分只能是一个原子值或一个返回原子值的过程调用。");
+                    }
+                }
+                else {
+                    return (JymlType)MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
+                }
+            }
+
             env.DefineVariable(defineVariable(exp), defineValue(exp));
             return null;
         }
