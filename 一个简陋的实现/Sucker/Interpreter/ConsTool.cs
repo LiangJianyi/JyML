@@ -12,7 +12,7 @@ namespace JymlAST {
             return arr;
         }
 
-        public static JymlType[] ConsToArguments(this Cons cons, Jyml.Environment.JymlEnvironment env) {
+        public static JymlType[] ParametersToArguments(this Cons cons, Jyml.Environment.JymlEnvironment env) {
             JymlType[] arr = new JymlType[cons.Length];
             int i = 0;
             foreach (var item in cons) {

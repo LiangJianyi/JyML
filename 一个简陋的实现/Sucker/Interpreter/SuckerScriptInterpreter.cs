@@ -200,7 +200,7 @@ namespace Interpreter {
             if (proc.car is string procedureName) {
                 if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(procedureName)) {
                     // (apply-primitive-procedure procedure arguments)
-                    return new JymlAST.Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ConsToArguments(env)));
+                    return new JymlAST.Cons(PrimitiveProcedure.PrimitiveProcedures[procedureName].Invoke(arguments.ParametersToArguments(env)));
                 }
                 else {
                     /*
@@ -211,7 +211,7 @@ namespace Interpreter {
                      */
                     Procedures p = proc.car as Procedures;
                     string[] variables = p.Parameters.ToArray<string>();
-                    JymlType[] values = arguments.ConsToArguments(env);
+                    JymlType[] values = arguments.ParametersToArguments(env);
                     return EvalSequence(
                         cons: proc,
                         env: p.Environment.ExtendEnvironment(variables, values)
@@ -226,7 +226,7 @@ namespace Interpreter {
         private static JymlAST.Cons Apply(string proc, JymlAST.Cons arguments, JymlEnvironment env) {
             if (PrimitiveProcedure.PrimitiveProcedures.Keys.Contains(proc)) {
                 // (apply-primitive-procedure procedure arguments)
-                return new JymlAST.Cons(PrimitiveProcedure.PrimitiveProcedures[proc].Invoke(arguments.ConsToArguments(env)));
+                return new JymlAST.Cons(PrimitiveProcedure.PrimitiveProcedures[proc].Invoke(arguments.ParametersToArguments(env)));
             }
             else {
                 /*
@@ -237,7 +237,7 @@ namespace Interpreter {
                  */
                 Procedures p = env.FrameNode[proc].Value as Procedures;
                 string[] variables = p.Parameters.ToArray<string>();
-                JymlType[] values = arguments.ConsToArguments(env);
+                JymlType[] values = arguments.ParametersToArguments(env);
                 return EvalSequence(
                     cons: (JymlAST.Cons)proc,
                     env: p.Environment.ExtendEnvironment(variables, values)
