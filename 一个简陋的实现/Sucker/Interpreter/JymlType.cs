@@ -473,10 +473,10 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.cons:
                     if (arguments.Length == 1) {
-                        return (JymlType)new JymlAST.Cons(arguments[0]);
+                        return new Cons(new JymlAST.Cons(arguments[0]));
                     }
                     else if (arguments.Length == 2) {
-                        return (JymlType)new JymlAST.Cons(arguments[0], arguments[1]);
+                        return new Cons(new JymlAST.Cons(arguments[0], arguments[1]));
                     }
                     else if (arguments.Length > 2) {
                         JymlAST.Cons cons = new JymlAST.Cons(null);

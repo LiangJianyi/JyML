@@ -17,7 +17,15 @@ namespace JymlAST {
             int i = 0;
             foreach (var item in cons) {
                 try {
-                    arr[i] = JymlType.CreateType(item as string);
+                    if (item is string str) {
+                        arr[i] = JymlType.CreateType(str); 
+                    }
+                    else if (item is JymlType jymlType) {
+                        arr[i] = jymlType;
+                    }
+                    else {
+                        arr[i] = JymlType.CreateType(item);
+                    }
                 }
                 catch (InvalidCastException) {
                     arr[i] = env.GetVariableValue(item as string);

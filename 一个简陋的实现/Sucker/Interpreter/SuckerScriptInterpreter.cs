@@ -30,12 +30,25 @@ namespace Interpreter {
                 else if (exp.car is JymlAST.Cons subexp) {
                     return new JymlAST.Cons(Eval(subexp, env), Eval(exp.cdr as JymlAST.Cons, env));
                 }
-                //else if (Parser.IsVariable(exp)) {
-                //    return new JymlAST.Cons(env.FrameNode[exp.car as string].Value);
-                //}
                 else {
                     if (exp.car is string proc) {
-                        return Apply(proc, ListOfValues(exp.cdr as JymlAST.Cons, env), env);
+                        JymlEnvironment.Restraint restraint = env.FrameNode[proc];
+                        if (restraint != null) {
+                            if (restraint.Value is Procedures && restraint.Value is PrimitiveProcedure) {
+                                return Apply(proc, ListOfValues(exp.cdr as JymlAST.Cons, env), env);
+                            }
+                            else {
+                                return new JymlAST.Cons(restraint.Value);
+                            }
+                        }
+                        else {
+                            if (Parser.IsVariable(exp)) {
+                                throw new Exception($"变量 {exp.car} 未定义。");
+                            }
+                            else {
+                                throw new Exception($"无效的语法：{exp}");
+                            }
+                        }
                     }
                     else if (exp.car is JymlAST.Cons cons) {
                         return Apply(cons, ListOfValues(exp.cdr as JymlAST.Cons, env), env);
@@ -270,7 +283,7 @@ namespace Interpreter {
                     return new JymlAST.Cons(arg, ListOfValues(arguments.cdr as JymlAST.Cons, env));
                 }
                 else {
-                    return new JymlAST.Cons(Eval(arguments.car as JymlAST.Cons, env).car as string, ListOfValues(arguments.cdr as JymlAST.Cons, env));
+                    return new JymlAST.Cons(Eval(arguments.car as JymlAST.Cons, env).car, ListOfValues(arguments.cdr as JymlAST.Cons, env));
                 }
             }
             else {
