@@ -34,7 +34,7 @@ namespace Interpreter {
                     if (exp.car is string proc) {
                         JymlEnvironment.Restraint restraint = env.FrameNode[proc];
                         if (restraint != null) {
-                            if (restraint.Value is Procedures && restraint.Value is PrimitiveProcedure) {
+                            if (restraint.Value is Procedures || restraint.Value is PrimitiveProcedure) {
                                 return Apply(proc, ListOfValues(exp.cdr as JymlAST.Cons, env), env);
                             }
                             else {
