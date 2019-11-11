@@ -38,7 +38,7 @@ namespace Interpreter {
                                 return Apply(proc, ListOfValues(exp.cdr as JymlAST.Cons, env), env);
                             }
                             else {
-                                return new JymlAST.Cons(restraint.Value);
+                                return new JymlAST.Cons(restraint.Value, Eval(exp.cdr as JymlAST.Cons, env));
                             }
                         }
                         else {
