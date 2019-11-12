@@ -10,14 +10,26 @@ using Jyml.Environment;
 namespace ManualTest {
     class Program {
         static void Main(string[] args) {
-            string suckerScriptPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\SuckerScript3.mast";
+            string suckerScriptPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\SuckerScript4.mast";
             string suckerScriptText = System.IO.File.ReadAllText(suckerScriptPath);
-            string suckerMLPath= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML.mast";
-            string suckerMLText= System.IO.File.ReadAllText(suckerMLPath);
+            string suckerMLPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML.mast";
+            string suckerMLText = System.IO.File.ReadAllText(suckerMLPath);
             PrintTopLevel(Parser.GenerateAst(suckerScriptText).ast);
             TestSuckerMLInterpreter(Parser.GenerateAst(suckerMLText));
             TestEval(Parser.GenerateAst(suckerScriptText));
+            //PressureTestForEval(suckerScriptText);
             Console.ReadKey();
+        }
+
+        private static void PressureTestForEval(string suckerScriptText) {
+            const int COUNT = 1000;
+            Console.WriteLine($"Execute TestEval {COUNT} times:");
+            System.DateTime startime = System.DateTime.Now;
+            for (int i = 0; i < COUNT; i++) {
+                Console.WriteLine($"Step {i + 1}：");
+                TestEval(Parser.GenerateAst(suckerScriptText));
+            }
+            Console.WriteLine($"Time consuming：{(System.DateTime.Now - startime).Seconds} s.");
         }
 
         private static void PrintAst(JymlAST.Cons ast) {
@@ -90,7 +102,7 @@ namespace ManualTest {
             foreach (var item in res) {
                 if (item != null) {
                     if (item is JymlAST.Cons cons) {
-                        Console.WriteLine(cons.car);  
+                        Console.WriteLine(cons.car);
                     }
                     else {
                         Console.WriteLine(item);
