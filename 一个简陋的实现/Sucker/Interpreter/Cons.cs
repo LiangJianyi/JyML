@@ -72,7 +72,7 @@ namespace JymlAST {
             Cons c = new Cons();
             Cons temp = c;
             foreach (var item in s) {
-                temp.car = s;
+                temp.car = item;
                 temp.cdr = new Cons();
                 temp = temp.cdr as Cons;
             }
@@ -93,11 +93,35 @@ namespace JymlAST {
 
         public override string ToString() => $"({this.car} {this.cdr})";
 
-        public override bool Equals(object obj) => Cons.Equals(this, obj as Cons);
+        public override bool Equals(object obj) {
+            Cons other = obj as Cons;
+            if (other.car != null && this.car != null) {
+                if (other.cdr != null && this.cdr != null) {
+                    System.Diagnostics.Debug.WriteLine($"{other.car}.Equals({this.car}) && {other.cdr}.Equals({this.cdr})");
+                    return other.car.Equals(this.car) && other.cdr.Equals(this.cdr);
+                }
+                else {
+                    if (other.car.Equals(this.car)) {
+                        return other.cdr == null && this.cdr == null;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+            else {
+                if (other.car == null && this.car == null) {
+                    return other.cdr.Equals(this.cdr);
+                }
+                else {
+                    return false;
+                }
+            }
+        }
 
         public static bool Equals(Cons cons1, Cons cons2) {
             if (cons1 != null && cons2 != null) {
-                return cons1.car == cons2.car && cons1.cdr == cons2.cdr;
+                return cons1.car.Equals(cons2.car) && cons1.cdr.Equals(cons2.cdr);
             }
             else {
                 return cons1 == null && cons2 == null;

@@ -124,7 +124,7 @@ namespace JymlParser {
         }
 
         public static string[] GetLambdaParameters(Cons ast) {
-            Cons parameters = (ast.cdr as Cons).car as Cons;
+            Cons parameters = ((ast.cdr as Cons).car as Cons).cdr as Cons;
             return parameters.ToArray<string>();
         }
 

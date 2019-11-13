@@ -10,12 +10,13 @@ using Jyml.Environment;
 namespace ManualTest {
     class Program {
         static void Main(string[] args) {
-            string suckerScriptPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\SuckerScript4.mast";
+            string suckerScriptPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\SuckerScript5.mast";
             string suckerScriptText = System.IO.File.ReadAllText(suckerScriptPath);
             string suckerMLPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Test Data\\suckerML.mast";
             string suckerMLText = System.IO.File.ReadAllText(suckerMLPath);
             PrintTopLevel(Parser.GenerateAst(suckerScriptText).ast);
             TestSuckerMLInterpreter(Parser.GenerateAst(suckerMLText));
+            Console.WriteLine(new JymlAST.Cons("a", new JymlAST.Cons("b", new JymlAST.Cons("c", new JymlAST.Cons("d", new JymlAST.Cons("e", new JymlAST.Cons("f", new JymlAST.Cons("G"))))))).Equals(new JymlAST.Cons("a", new JymlAST.Cons("b", new JymlAST.Cons("c", new JymlAST.Cons("d", new JymlAST.Cons("e", new JymlAST.Cons("f", new JymlAST.Cons("g")))))))));
             TestEval(Parser.GenerateAst(suckerScriptText));
             //PressureTestForEval(suckerScriptText);
             Console.ReadKey();
