@@ -71,10 +71,15 @@ namespace JymlAST {
         public static explicit operator Cons(string[] s) {
             Cons c = new Cons();
             Cons temp = c;
-            foreach (var item in s) {
-                temp.car = item;
-                temp.cdr = new Cons();
-                temp = temp.cdr as Cons;
+            for (int i = 0; i < s.Length; i++) {
+                temp.car = s[i];
+                if (i < s.Length - 1) {
+                    temp.cdr = new Cons();
+                    temp = temp.cdr as Cons;
+                }
+                else {
+                    temp.cdr = null;
+                }
             }
             return c;
         }
