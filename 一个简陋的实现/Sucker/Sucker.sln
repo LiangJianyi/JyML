@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigIntegerExtension", "..\.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualTest", "ManualTest\ManualTest.csproj", "{1C4E0595-7571-4311-8629-F316B8549421}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpreterTests", "InterpreterTests\InterpreterTests.csproj", "{9C6CB967-7784-4990-BD5F-44C9B4258F0F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{1C4E0595-7571-4311-8629-F316B8549421}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C4E0595-7571-4311-8629-F316B8549421}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C4E0595-7571-4311-8629-F316B8549421}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C6CB967-7784-4990-BD5F-44C9B4258F0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C6CB967-7784-4990-BD5F-44C9B4258F0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C6CB967-7784-4990-BD5F-44C9B4258F0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C6CB967-7784-4990-BD5F-44C9B4258F0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
