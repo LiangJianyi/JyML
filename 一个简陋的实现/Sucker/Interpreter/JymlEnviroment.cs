@@ -76,7 +76,7 @@ namespace Jyml.Environment {
 
         public JymlType GetVariableValue(string var) {
             foreach (var env in this) {
-                if (env.FrameNode[var]!=null) {
+                if (env.FrameNode[var] != null) {
                     return env.FrameNode[var].Value;
                 }
             }
@@ -114,6 +114,17 @@ namespace Jyml.Environment {
                 env = env.Enviroment;
             }
             yield break;
+        }
+
+        public Restraint this[string i] {
+            get {
+                foreach (var env in this) {
+                    if (env.FrameNode[i] != null) {
+                        return env.FrameNode[i];
+                    }
+                }
+                return null;
+            }
         }
     }
 }

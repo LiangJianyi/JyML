@@ -32,7 +32,7 @@ namespace Interpreter {
                 }
                 else {
                     if (exp.car is string proc) {
-                        JymlEnvironment.Restraint restraint = env.FrameNode[proc];
+                        JymlEnvironment.Restraint restraint = env[proc];
                         if (restraint != null) {
                             if (restraint.Value is Procedures || restraint.Value is PrimitiveProcedure) {
                                 return Apply(proc, ListOfValues(exp.cdr as JymlAST.Cons, env), env);
@@ -251,10 +251,11 @@ namespace Interpreter {
                 Procedures p = env.FrameNode[proc].Value as Procedures;
                 string[] variables = p.Parameters.ToArray<string>();
                 JymlType[] values = arguments.ParametersToArguments(env);
-                return EvalSequence(
-                    cons: (JymlAST.Cons)proc,
-                    env: p.Environment.ExtendEnvironment(variables, values)
-                );
+                //return EvalSequence(
+                //    cons: (JymlAST.Cons)proc,
+                //    env: p.Environment.ExtendEnvironment(variables, values)
+                //);
+                return Eval(p.Body, p.Environment.ExtendEnvironment(variables, values));
             }
         }
 
