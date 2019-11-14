@@ -16,7 +16,7 @@ namespace JymlAST {
             this.cdr = cdr;
         }
 
-        public static Cons FromList(IEnumerable list) {
+        public static Cons FromList(IEnumerable<object> list) {
             if (list == null) {
                 return null;
             }
