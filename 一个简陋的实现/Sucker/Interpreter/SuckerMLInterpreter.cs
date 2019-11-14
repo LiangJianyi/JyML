@@ -5,7 +5,7 @@ using JymlAST;
 
 namespace Interpreter {
     public static class SuckerMLInterpreter {
-        public class DayNode : IComparable<DayNode> {
+        public sealed class DayNode : IComparable<DayNode> {
             public int Day { get; private set; }
             public BigInteger Total { get; set; }
             public DayNode(int day, BigInteger total) {
@@ -36,7 +36,7 @@ namespace Interpreter {
             }
         }
 
-        public class MonthNode : IComparable<MonthNode> {
+        public sealed class MonthNode : IComparable<MonthNode> {
             public int Month { get; private set; }
             public SortedList<int, DayNode> Days { get; private set; }
             public MonthNode(int month) {
@@ -105,7 +105,7 @@ namespace Interpreter {
             }
         }
 
-        public class YearNode : IComparable<YearNode> {
+        public sealed class YearNode : IComparable<YearNode> {
             public BigInteger Year { get; private set; }
             public SortedList<int, MonthNode> Months { get; private set; }
             public YearNode(BigInteger year) {

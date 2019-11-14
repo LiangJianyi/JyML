@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections;
 
 namespace Jyml.Environment {
-    public class JymlEnvironment : IEnumerable<JymlEnvironment> {
+    public sealed class JymlEnvironment : IEnumerable<JymlEnvironment> {
         public class Restraint {
             public string Variable { get; set; }
             public JymlType Value { get; set; }

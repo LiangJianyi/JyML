@@ -182,5 +182,26 @@ namespace JymlParser {
             }
         }
 
+        public static string GetProcedureName(Cons exp) {
+            if ((exp.cdr as Cons).car is Cons proc) {
+                return proc.car as string;
+            }
+            else if ((exp.cdr as Cons).car is string var) {
+                if (((exp.cdr as Cons).cdr as Cons).car is Cons lambdaExp) {
+                    if (IsLambda(lambdaExp)) {
+                        return var;
+                    }
+                    else {
+                        throw new Exception($"变量 {var} 必须接收一个 lambda 表达式。");
+                    }
+                }
+                else {
+                    throw new Exception($"表达式 {exp} 不是一个过程定义。");
+                }
+            }
+            else {
+                throw new Exception($"表达式 {exp} 不是一个过程定义。");
+            }
+        }
     }
 }

@@ -172,7 +172,7 @@ namespace Interpreter {
                     }
                 }
                 else {
-                    return (JymlType)MakeLambda(Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
+                    return new Procedures(Parser.GetProcedureName(exp), (JymlAST.Cons)Parser.GetLambdaParameters(exp), Parser.GetLambdaBody(exp), env);   // 过程定义
                 }
             }
 
