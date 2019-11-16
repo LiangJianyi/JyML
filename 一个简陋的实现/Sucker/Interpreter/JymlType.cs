@@ -223,7 +223,6 @@ namespace JymlTypeSystem {
         public static Double operator -(Double x, Double y) => new Double(x._number - y._number);
         public static Double operator *(Double x, Double y) => new Double(x._number * y._number);
         public static Double operator /(Double x, Double y) => new Double(x._number / y._number);
-        public static Double operator %(Double x, Double y) => new Double(x._number % y._number);
         public static Boolean operator <(Double left, Double right) => new Boolean(left._number < right._number);
         public static Boolean operator <=(Double left, Double right) => new Boolean(left._number <= right._number);
         public static Boolean operator ==(Double left, Double right) => new Boolean(left._number == right._number);
@@ -234,7 +233,6 @@ namespace JymlTypeSystem {
         public static Double operator -(Integer x, Double y) => new Double((double)x._number - y._number);
         public static Double operator *(Integer x, Double y) => new Double((double)x._number * y._number);
         public static Double operator /(Integer x, Double y) => new Double((double)x._number / y._number);
-        public static Double operator %(Integer x, Double y) => new Double((double)x._number % y._number);
         public static Boolean operator <(Integer left, Double right) => new Boolean((double)left._number < right._number);
         public static Boolean operator <=(Integer left, Double right) => new Boolean((double)left._number <= right._number);
         public static Boolean operator ==(Integer left, Double right) => new Boolean((double)left._number == right._number);
@@ -245,7 +243,6 @@ namespace JymlTypeSystem {
         public static Double operator -(Double x, Integer y) => new Double(x._number - (double)y._number);
         public static Double operator *(Double x, Integer y) => new Double(x._number * (double)y._number);
         public static Double operator /(Double x, Integer y) => new Double(x._number / (double)y._number);
-        public static Double operator %(Double x, Integer y) => new Double(x._number % (double)y._number);
         public static Boolean operator <(Double left, Integer right) => new Boolean(left._number < (double)right._number);
         public static Boolean operator <=(Double left, Integer right) => new Boolean(left._number <= (double)right._number);
         public static Boolean operator ==(Double left, Integer right) => new Boolean(left._number == (double)right._number);
@@ -409,6 +406,199 @@ namespace JymlTypeSystem {
             }
             else {
                 throw new InvalidOperationException($"% 运算两边的对象类型必须为 {typeof(Integer)}");
+            }
+        }
+        public static Number operator +(Integer n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 + n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 + n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 + 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator -(Integer n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 - n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 - n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 - 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator *(Integer n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 * n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 * n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 * 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator /(Integer n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 / n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 / n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 / 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator %(Integer n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 % n2Int);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 % 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator +(Number n1, Integer n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int + n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double + n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 + 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator -(Number n1, Integer n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int - n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double - n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 - 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator *(Number n1, Integer n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int * n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double * n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 * 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator /(Number n1, Integer n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int / n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double / n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 / 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator %(Number n1, Integer n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int % n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 % 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator +(Double n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 + n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 + n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 + 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator -(Double n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 - n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 - n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 - 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator *(Double n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 * n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 * n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 * 运算，其类型为：{n2.GetType()}");
+            }
+        }
+        public static Number operator /(Double n1, Number n2) {
+            if (n2._number is Integer n2Int) {
+                return new Number(n1 / n2Int);
+            }
+            else if (n2._number is Double n2Double) {
+                return new Number(n1 / n2Double);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n2} 无法执行 / 运算，其类型为：{n2.GetType()}");
+            }
+        }
+
+        public static Number operator +(Number n1, Double n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int + n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double + n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 + 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator -(Number n1, Double n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int - n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double - n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 - 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator *(Number n1, Double n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int * n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double * n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 * 运算，其类型为：{n1.GetType()}");
+            }
+        }
+        public static Number operator /(Number n1, Double n2) {
+            if (n1._number is Integer n1Int) {
+                return new Number(n1Int / n2);
+            }
+            else if (n1._number is Double n1Double) {
+                return new Number(n1Double / n2);
+            }
+            else {
+                throw new InvalidCastException($"对象 {n1} 无法执行 / 运算，其类型为：{n1.GetType()}");
             }
         }
     }
