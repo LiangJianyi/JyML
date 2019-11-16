@@ -6,6 +6,8 @@ using Janyee.Utilty;
 using Jyml.Environment;
 
 namespace JymlTypeSystem {
+    public interface INumber { }
+
     public abstract class JymlType {
         public static JymlType CreateType(string str) {
             try {
@@ -140,22 +142,22 @@ namespace JymlTypeSystem {
         public override bool Equals(object obj) => _bool == (obj as Boolean)._bool;
     }
 
-    public class Number : JymlType {
+    public class Integer : JymlType, INumber {
         internal BigInteger _number;
 
-        public Number(string exp) {
+        public Integer(string exp) {
             try {
-                this._number = BigInteger.Parse(exp);
+                this._number = BigInteger.Parse(exp, System.Globalization.NumberStyles.Number);
             }
             catch (FormatException ex) {
                 throw new InvalidCastException($"{exp} 是无效的 Number。", ex);
             }
         }
 
-        public Number(BigInteger bi) => _number = bi;
+        public Integer(BigInteger bi) => _number = bi;
 
-        public Number(object obj) {
-            if (obj is Number num) {
+        public Integer(object obj) {
+            if (obj is Integer num) {
                 _number = num._number;
             }
             else {
@@ -163,17 +165,17 @@ namespace JymlTypeSystem {
             }
         }
 
-        public static Number operator +(Number x, Number y) => new Number(x._number + y._number);
-        public static Number operator -(Number x, Number y) => new Number(x._number - y._number);
-        public static Number operator *(Number x, Number y) => new Number(x._number * y._number);
-        public static Number operator /(Number x, Number y) => new Number(x._number / y._number);
-        public static Number operator %(Number x, Number y) => new Number(x._number % y._number);
-        public static Boolean operator <(Number left, Number right) => new Boolean(left._number < right._number);
-        public static Boolean operator <=(Number left, Number right) => new Boolean(left._number <= right._number);
-        public static Boolean operator ==(Number left, Number right) => new Boolean(left._number == right._number);
-        public static Boolean operator !=(Number left, Number right) => new Boolean(left._number != right._number);
-        public static Boolean operator >=(Number left, Number right) => new Boolean(left._number >= right._number);
-        public static Boolean operator >(Number left, Number right) => new Boolean(left._number > right._number);
+        public static Integer operator +(Integer x, Integer y) => new Integer(x._number + y._number);
+        public static Integer operator -(Integer x, Integer y) => new Integer(x._number - y._number);
+        public static Integer operator *(Integer x, Integer y) => new Integer(x._number * y._number);
+        public static Integer operator /(Integer x, Integer y) => new Integer(x._number / y._number);
+        public static Integer operator %(Integer x, Integer y) => new Integer(x._number % y._number);
+        public static Boolean operator <(Integer left, Integer right) => new Boolean(left._number < right._number);
+        public static Boolean operator <=(Integer left, Integer right) => new Boolean(left._number <= right._number);
+        public static Boolean operator ==(Integer left, Integer right) => new Boolean(left._number == right._number);
+        public static Boolean operator !=(Integer left, Integer right) => new Boolean(left._number != right._number);
+        public static Boolean operator >=(Integer left, Integer right) => new Boolean(left._number >= right._number);
+        public static Boolean operator >(Integer left, Integer right) => new Boolean(left._number > right._number);
 
         public override string ToString() => _number.ToString();
 
@@ -183,7 +185,82 @@ namespace JymlTypeSystem {
             }
         }
 
-        public override bool Equals(object obj) => _number == (obj as Number)._number;
+        public override bool Equals(object obj) => _number == (obj as Integer)._number;
+    }
+
+    public class Double : JymlType, INumber {
+        internal double _number;
+
+        public Double(string exp) {
+            try {
+                this._number = Convert.ToDouble(exp);
+            }
+            catch (FormatException ex) {
+                throw new InvalidCastException($"{exp} 是无效的 Number。", ex);
+            }
+        }
+
+        public Double(double d) => _number = d;
+
+        public Double(object obj) {
+            if (obj is Double num) {
+                _number = num._number;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 Number 不匹配，其类型为：{obj.GetType()}。");
+            }
+        }
+
+        public static Double operator +(Double x, Double y) => new Double(x._number + y._number);
+        public static Double operator -(Double x, Double y) => new Double(x._number - y._number);
+        public static Double operator *(Double x, Double y) => new Double(x._number * y._number);
+        public static Double operator /(Double x, Double y) => new Double(x._number / y._number);
+        public static Double operator %(Double x, Double y) => new Double(x._number % y._number);
+        public static Boolean operator <(Double left, Double right) => new Boolean(left._number < right._number);
+        public static Boolean operator <=(Double left, Double right) => new Boolean(left._number <= right._number);
+        public static Boolean operator ==(Double left, Double right) => new Boolean(left._number == right._number);
+        public static Boolean operator !=(Double left, Double right) => new Boolean(left._number != right._number);
+        public static Boolean operator >=(Double left, Double right) => new Boolean(left._number >= right._number);
+        public static Boolean operator >(Double left, Double right) => new Boolean(left._number > right._number);
+
+        public override string ToString() => _number.ToString();
+
+        public override int GetHashCode() {
+            unchecked {
+                return 17 * 23 + _number.GetHashCode();
+            }
+        }
+
+        public override bool Equals(object obj) => _number == (obj as Double)._number;
+    }
+
+    public class Number : JymlType {
+        internal INumber _number;
+        public Number(string str) {
+            int dotNum = str.Select(x => x).Where(x => x == '.').Count();
+            if (dotNum > 1) {
+                throw new InvalidCastException($"数字只能有一个小数点。token: {str}");
+            }
+            else if (dotNum < 1) {
+                _number = new Integer(str);
+            }
+            else {
+                if (str.IndexOf('.') > 0 && str.IndexOf('.') < str.Length - 1) {
+                    _number = new Double(str);
+                }
+                else {
+                    throw new InvalidCastException($"{str} 无法转换为 Number 类型。");
+                }
+            }
+        }
+        public Number(object obj) {
+            if (obj is INumber number) {
+                _number = number;
+            }
+            else {
+                throw new InvalidCastException($"对象 {obj} 与 类型 Number 不匹配，其类型为：{obj.GetType()}。");
+            }
+        }
     }
 
     public class String : JymlType {
@@ -253,8 +330,8 @@ namespace JymlTypeSystem {
             }
         }
 
-        public static DateTime operator +(Number bi, DateTime dt) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
-        public static DateTime operator +(DateTime dt, Number bi) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
+        public static DateTime operator +(Integer bi, DateTime dt) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
+        public static DateTime operator +(DateTime dt, Integer bi) => new DateTime(dt._date.AddDays(bi._number.BigIntegerToInt64()));
         public static Boolean operator ==(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Equals(dt1._date, dt2._date));
         public static Boolean operator !=(DateTime dt1, DateTime dt2) => new Boolean(!System.DateTime.Equals(dt1._date, dt2._date));
         public static Boolean operator <(DateTime dt1, DateTime dt2) => new Boolean(System.DateTime.Compare(dt1._date, dt2._date) == -1);
@@ -377,8 +454,8 @@ namespace JymlTypeSystem {
             switch (_primitive) {
                 case Primitive.add:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number bigInteger1) {
-                            if (arguments[1] is Number bigInteger2) {
+                        if (arguments[0] is Integer bigInteger1) {
+                            if (arguments[1] is Integer bigInteger2) {
                                 return bigInteger1 + bigInteger2;
                             }
                             else if (arguments[1] is DateTime dateTime) {
@@ -389,7 +466,7 @@ namespace JymlTypeSystem {
                             }
                         }
                         else if (arguments[0] is DateTime dateTime) {
-                            if (arguments[1] is Number bigInteger) {
+                            if (arguments[1] is Integer bigInteger) {
                                 return dateTime + bigInteger;
                             }
                             else {
@@ -405,8 +482,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.sub:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number bigInteger3) {
-                            if (arguments[1] is Number bigInteger4) {
+                        if (arguments[0] is Integer bigInteger3) {
+                            if (arguments[1] is Integer bigInteger4) {
                                 return bigInteger3 - bigInteger4;
                             }
                             else {
@@ -422,8 +499,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.multi:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number bigInteger5) {
-                            if (arguments[1] is Number bigInteger6) {
+                        if (arguments[0] is Integer bigInteger5) {
+                            if (arguments[1] is Integer bigInteger6) {
                                 return bigInteger5 * bigInteger6;
                             }
                             else {
@@ -439,8 +516,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.div:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number bigInteger7) {
-                            if (arguments[1] is Number bigInteger8) {
+                        if (arguments[0] is Integer bigInteger7) {
+                            if (arguments[1] is Integer bigInteger8) {
                                 return bigInteger7 - bigInteger8;
                             }
                             else {
@@ -456,8 +533,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.rem:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number bigInteger9) {
-                            if (arguments[1] is Number bigInteger10) {
+                        if (arguments[0] is Integer bigInteger9) {
+                            if (arguments[1] is Integer bigInteger10) {
                                 return bigInteger9 - bigInteger10;
                             }
                             else {
@@ -568,8 +645,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.lessThan:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number number1) {
-                            if (arguments[1] is Number number2) {
+                        if (arguments[0] is Integer number1) {
+                            if (arguments[1] is Integer number2) {
                                 return number1 < number2;
                             }
                             else {
@@ -593,8 +670,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.lessThanOrEqualTo:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number number1) {
-                            if (arguments[1] is Number number2) {
+                        if (arguments[0] is Integer number1) {
+                            if (arguments[1] is Integer number2) {
                                 return number1 <= number2;
                             }
                             else {
@@ -618,8 +695,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.equalTo:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number number1) {
-                            if (arguments[1] is Number number2) {
+                        if (arguments[0] is Integer number1) {
+                            if (arguments[1] is Integer number2) {
                                 return number1 == number2;
                             }
                             else {
@@ -667,8 +744,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.greaterThan:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number number1) {
-                            if (arguments[1] is Number number2) {
+                        if (arguments[0] is Integer number1) {
+                            if (arguments[1] is Integer number2) {
                                 return number1 > number2;
                             }
                             else {
@@ -692,8 +769,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.greaterThanOrEqualTo:
                     if (arguments.Length == 2) {
-                        if (arguments[0] is Number number1) {
-                            if (arguments[1] is Number number2) {
+                        if (arguments[0] is Integer number1) {
+                            if (arguments[1] is Integer number2) {
                                 return number1 >= number2;
                             }
                             else {
@@ -717,8 +794,8 @@ namespace JymlTypeSystem {
                     }
                 case Primitive.notEqualTo:
                     if (arguments.Length == 1) {
-                        if (arguments[0] is Number number1) {
-                            if (arguments[1] is Number number2) {
+                        if (arguments[0] is Integer number1) {
+                            if (arguments[1] is Integer number2) {
                                 return number1 != number2;
                             }
                             else {
